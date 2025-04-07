@@ -2,7 +2,7 @@
   "name": "photo-capture-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://github.io/bill-n/capital_infradienst_app",
+  "homepage": "https://github.com/bill-n/capital_infradienst_app",
   "dependencies": {
     "@radix-ui/react-toast": "^1.2.6",
     "@shadcn/ui": "^0.0.4",
@@ -11,6 +11,7 @@
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.8.3",
+    "dotenv": "^16.4.7",
     "emailjs-com": "^3.2.0",
     "gapi-script": "^1.2.0",
     "jspdf": "^3.0.1",

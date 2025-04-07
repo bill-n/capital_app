@@ -204,7 +204,7 @@ function App() {
     <div className="App">
       <h1 className="app-title">
         <span role="img" aria-label="building">🏢</span>{' '}
-        <span style={{ color: 'black' }}>CAPITAL</span>{' '}
+        <span style={{ color: 'black' }}>CAPITAL </span>{' '}
         <span style={{ color: '#c4aa6a' }}>INFRADIENST</span>
       </h1>
 

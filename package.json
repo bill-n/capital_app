@@ -2,7 +2,7 @@
   "name": "photo-capture-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://bill-n.github.io/photo-capture-app",
+  "homepage": "https://bill-n.github.io/capital_infradienst_app",
   "dependencies": {
     "@radix-ui/react-toast": "^1.2.6",
     "@shadcn/ui": "^0.0.4",

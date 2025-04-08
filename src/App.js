@@ -4,7 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Webcam from 'react-webcam';
 import { jsPDF } from 'jspdf';
 import { gapi } from 'gapi-script';
-import './app.css';
+import './App.css';
 
 const CLIENT_ID = '203380184351-cbq2fcpfecc9h0kfhab41sd993hmjku8.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/gmail.send';

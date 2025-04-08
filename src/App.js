@@ -4,7 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Webcam from 'react-webcam';
 import { jsPDF } from 'jspdf';
 import { gapi } from 'gapi-script';
-import './App.css';
+import './app.css';
 
 const CLIENT_ID = '203380184351-cbq2fcpfecc9h0kfhab41sd993hmjku8.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/gmail.send';
@@ -29,6 +29,22 @@ function App() {
   const [googleAuthReady, setGoogleAuthReady] = useState(false);
   const authInstanceRef = useRef(null);
 
+  const [videoConstraints, setVideoConstraints] = useState({
+    facingMode: { exact: 'environment' },
+  });
+
+  useEffect(() => {
+    navigator.mediaDevices
+      .getUserMedia({ video: videoConstraints })
+      .then(() => {
+        setVideoConstraints({ facingMode: { exact: 'environment' } });
+      })
+      .catch((err) => {
+        console.warn('Back camera not available. Falling back to default.', err);
+        setVideoConstraints({ facingMode: 'user' });
+      });
+  }, []);
+
   useEffect(() => {
     function start() {
       gapi.client
@@ -41,7 +57,7 @@ function App() {
           authInstanceRef.current = authInstance;
           setIsAuthorized(authInstance.isSignedIn.get());
           authInstance.isSignedIn.listen(setIsAuthorized);
-          setGoogleAuthReady(true); // Auth is ready
+          setGoogleAuthReady(true);
         })
         .catch((error) => {
           console.error('Error loading GAPI:', error);
@@ -220,7 +236,7 @@ function App() {
 
       <div className="camera-layout">
         <div className="camera-container">
-          <Webcam ref={webcamRef} screenshotFormat="image/jpeg" className="webcam" />
+          <Webcam ref={webcamRef} screenshotFormat="image/jpeg" className="webcam" videoConstraints={videoConstraints} />
         </div>
 
         <div className="dropdown-container">

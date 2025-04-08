@@ -41,7 +41,7 @@ function App() {
           authInstanceRef.current = authInstance;
           setIsAuthorized(authInstance.isSignedIn.get());
           authInstance.isSignedIn.listen(setIsAuthorized);
-          setGoogleAuthReady(true);
+          setGoogleAuthReady(true); // Auth is ready
         })
         .catch((error) => {
           console.error('Error loading GAPI:', error);
@@ -127,7 +127,9 @@ function App() {
     pdf.text(`Country: ${location.country}`, 10, 120);
 
     if (capturedImage.startsWith('data:image')) {
-      pdf.addImage(capturedImage, 'JPEG', 10, 130, 180, 100);
+      // Adding the captured image to the PDF with improved sharpness
+      // Using PNG format for better quality and increasing size and quality
+      pdf.addImage(capturedImage, 'PNG', 10, 130, 300, 160, undefined, 'SLOW', 1); // Max quality, larger size
     } else {
       console.error('Invalid image format');
       return;
@@ -220,14 +222,7 @@ function App() {
 
       <div className="camera-layout">
         <div className="camera-container">
-          <Webcam
-            ref={webcamRef}
-            screenshotFormat="image/jpeg"
-            className="webcam"
-            videoConstraints={{
-              facingMode: { ideal: 'environment' }
-            }}
-          />
+          <Webcam ref={webcamRef} screenshotFormat="image/jpeg" className="webcam" />
         </div>
 
         <div className="dropdown-container">

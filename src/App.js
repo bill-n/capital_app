@@ -6,8 +6,8 @@ import { jsPDF } from 'jspdf';
 import { gapi } from 'gapi-script';
 import './App.css';
 
-const CLIENT_ID = '203380184351-cbq2fcpfecc9h0kfhab41sd993hmjku8.apps.googleusercontent.com';
-const SCOPES = 'https://www.googleapis.com/auth/gmail.send';
+const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+const SCOPES = process.env.REACT_APP_GOOGLE_SCOPE;
 
 function App() {
   const [capturedImage, setCapturedImage] = useState(null);
@@ -153,8 +153,8 @@ function App() {
     }
 
     const emailContent = [
-      `To: teebill15@gmail.com`,
-      `Cc: teebill15@gmail.com`,
+      `To: ${process.env.REACT_APP_EMAIL_TO}`,
+      `Cc: ${process.env.REACT_APP_EMAIL_CC}`,
       'Subject: Captured Image and Details',
       'MIME-Version: 1.0',
       'Content-Type: multipart/mixed; boundary=boundary',

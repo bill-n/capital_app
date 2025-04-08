@@ -29,22 +29,6 @@ function App() {
   const [googleAuthReady, setGoogleAuthReady] = useState(false);
   const authInstanceRef = useRef(null);
 
-  const [videoConstraints, setVideoConstraints] = useState({
-    facingMode: { exact: 'environment' },
-  });
-
-  useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ video: videoConstraints })
-      .then(() => {
-        setVideoConstraints({ facingMode: { exact: 'environment' } });
-      })
-      .catch((err) => {
-        console.warn('Back camera not available. Falling back to default.', err);
-        setVideoConstraints({ facingMode: 'user' });
-      });
-  }, []);
-
   useEffect(() => {
     function start() {
       gapi.client
@@ -236,7 +220,14 @@ function App() {
 
       <div className="camera-layout">
         <div className="camera-container">
-          <Webcam ref={webcamRef} screenshotFormat="image/jpeg" className="webcam" videoConstraints={videoConstraints} />
+          <Webcam
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            className="webcam"
+            videoConstraints={{
+              facingMode: { ideal: 'environment' }
+            }}
+          />
         </div>
 
         <div className="dropdown-container">

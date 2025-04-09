@@ -269,7 +269,7 @@ function App() {
               <p>City: {location.city}</p>
               <p>Street: {location.street}</p>
               <p>House Number: {location.houseNumber}</p>
-              <p>Building: {location.building}</p>
+              <p>Building Loc: {location.building}</p>
               <p>Floor: {selectedFloor}</p>
               <p>Type: {selectedType}</p>
               <p>Description: {selectedDescription}</p>

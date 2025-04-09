@@ -14,6 +14,7 @@ function App() {
   const [selectedFloor, setSelectedFloor] = useState('1');
   const [selectedType, setSelectedType] = useState('Classroom');
   const [selectedDescription, setSelectedDescription] = useState('Clean');
+  const [facingMode, setFacingMode] = useState('environment'); // 👈 Added for camera selection
   const [location, setLocation] = useState({
     latitude: null,
     longitude: null,
@@ -24,6 +25,7 @@ function App() {
     houseNumber: '',
     timestamp: '',
   });
+
   const webcamRef = useRef(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [googleAuthReady, setGoogleAuthReady] = useState(false);
@@ -41,7 +43,7 @@ function App() {
           authInstanceRef.current = authInstance;
           setIsAuthorized(authInstance.isSignedIn.get());
           authInstance.isSignedIn.listen(setIsAuthorized);
-          setGoogleAuthReady(true); // Auth is ready
+          setGoogleAuthReady(true);
         })
         .catch((error) => {
           console.error('Error loading GAPI:', error);
@@ -59,7 +61,6 @@ function App() {
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
           );
           const data = await response.json();
-
           setLocation({
             latitude,
             longitude,
@@ -72,16 +73,6 @@ function App() {
           });
         } catch (error) {
           console.error('Error fetching location:', error);
-          setLocation({
-            latitude,
-            longitude,
-            city: '',
-            country: '',
-            street: '',
-            building: '',
-            houseNumber: 'Not available',
-            timestamp,
-          });
         }
       });
     }
@@ -127,9 +118,7 @@ function App() {
     pdf.text(`Country: ${location.country}`, 10, 120);
 
     if (capturedImage.startsWith('data:image')) {
-      // Adding the captured image to the PDF with improved sharpness
-      // Using PNG format for better quality and increasing size and quality
-      pdf.addImage(capturedImage, 'PNG', 10, 130, 300, 160, undefined, 'SLOW', 1); // Max quality, larger size
+      pdf.addImage(capturedImage, 'PNG', 10, 130, 300, 160, undefined, 'SLOW', 1);
     } else {
       console.error('Invalid image format');
       return;
@@ -146,7 +135,6 @@ function App() {
 
   const sendGmail = async (base64data) => {
     const accessToken = gapi.auth.getToken()?.access_token;
-
     if (!accessToken) {
       toast.warn('Not authorized. Please sign in again.');
       return;
@@ -222,7 +210,21 @@ function App() {
 
       <div className="camera-layout">
         <div className="camera-container">
-          <Webcam ref={webcamRef} screenshotFormat="image/jpeg" className="webcam" />
+          {/* 👇 New camera selector */}
+          <div className="camera-selector">
+            <label>Select Camera:</label>
+            <select value={facingMode} onChange={(e) => setFacingMode(e.target.value)}>
+              <option value="user">Front Camera</option>
+              <option value="environment">Back Camera</option>
+            </select>
+          </div>
+
+          <Webcam
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            className="webcam"
+            videoConstraints={{ facingMode: facingMode }}
+          />
         </div>
 
         <div className="dropdown-container">

@@ -220,7 +220,6 @@ function App() {
       )}
 
       <div className="camera-selector">
-        <label htmlFor="cameraSelect">Select Camera:</label>
         <select
           id="cameraSelect"
           value={facingMode}

@@ -480,6 +480,7 @@ body {
   width: 100%;
   max-width: 200px;
   cursor: pointer;
+  margin:auto;
 }
 
 .styled-select:focus {

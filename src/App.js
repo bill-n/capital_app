@@ -14,7 +14,7 @@ function App() {
   const [selectedFloor, setSelectedFloor] = useState('1');
   const [selectedType, setSelectedType] = useState('Classroom');
   const [selectedDescription, setSelectedDescription] = useState('Clean');
-  const [facingMode, setFacingMode] = useState('environment'); // 👈 Added for camera selection
+  const [facingMode, setFacingMode] = useState('environment');
   const [location, setLocation] = useState({
     latitude: null,
     longitude: null,
@@ -25,7 +25,6 @@ function App() {
     houseNumber: '',
     timestamp: '',
   });
-
   const webcamRef = useRef(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [googleAuthReady, setGoogleAuthReady] = useState(false);
@@ -61,6 +60,7 @@ function App() {
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
           );
           const data = await response.json();
+
           setLocation({
             latitude,
             longitude,
@@ -73,6 +73,16 @@ function App() {
           });
         } catch (error) {
           console.error('Error fetching location:', error);
+          setLocation({
+            latitude,
+            longitude,
+            city: '',
+            country: '',
+            street: '',
+            building: '',
+            houseNumber: 'Not available',
+            timestamp,
+          });
         }
       });
     }
@@ -135,6 +145,7 @@ function App() {
 
   const sendGmail = async (base64data) => {
     const accessToken = gapi.auth.getToken()?.access_token;
+
     if (!accessToken) {
       toast.warn('Not authorized. Please sign in again.');
       return;
@@ -208,22 +219,26 @@ function App() {
         </button>
       )}
 
+      <div className="camera-selector">
+        <label htmlFor="cameraSelect">Select Camera:</label>
+        <select
+          id="cameraSelect"
+          value={facingMode}
+          onChange={(e) => setFacingMode(e.target.value)}
+          className="styled-select"
+        >
+          <option value="user">Front Camera</option>
+          <option value="environment">Back Camera</option>
+        </select>
+      </div>
+
       <div className="camera-layout">
         <div className="camera-container">
-          {/* 👇 New camera selector */}
-          <div className="camera-selector">
-            <label>Select Camera:</label>
-            <select value={facingMode} onChange={(e) => setFacingMode(e.target.value)}>
-              <option value="user">Front Camera</option>
-              <option value="environment">Back Camera</option>
-            </select>
-          </div>
-
           <Webcam
             ref={webcamRef}
             screenshotFormat="image/jpeg"
             className="webcam"
-            videoConstraints={{ facingMode: facingMode }}
+            videoConstraints={{ facingMode }}
           />
         </div>
 
@@ -231,9 +246,7 @@ function App() {
           <label>Floor:</label>
           <select value={selectedFloor} onChange={(e) => setSelectedFloor(e.target.value)}>
             {[...Array(50)].map((_, i) => (
-              <option key={i} value={i + 1}>
-                {i + 1}
-              </option>
+              <option key={i} value={i + 1}>{i + 1}</option>
             ))}
           </select>
 
@@ -269,7 +282,7 @@ function App() {
               <p>City: {location.city}</p>
               <p>Street: {location.street}</p>
               <p>House Number: {location.houseNumber}</p>
-              <p>Building Loc: {location.building}</p>
+              <p>Building: {location.building}</p>
               <p>Floor: {selectedFloor}</p>
               <p>Type: {selectedType}</p>
               <p>Description: {selectedDescription}</p>

@@ -113,26 +113,39 @@ function App() {
       return;
     }
 
-    const pdf = new jsPDF();
-    pdf.text('Captured Image Details', 10, 10);
-    pdf.text(`Latitude: ${location.latitude}`, 10, 20);
-    pdf.text(`Longitude: ${location.longitude}`, 10, 30);
-    pdf.text(`City: ${location.city}`, 10, 40);
-    pdf.text(`Street: ${location.street}`, 10, 50);
-    pdf.text(`House Number: ${location.houseNumber}`, 10, 60);
-    pdf.text(`Building: ${location.building}`, 10, 70);
-    pdf.text(`Floor: ${selectedFloor}`, 10, 80);
-    pdf.text(`Type: ${selectedType}`, 10, 90);
-    pdf.text(`Description: ${selectedDescription}`, 10, 100);
-    pdf.text(`Date & Time: ${location.timestamp}`, 10, 110);
-    pdf.text(`Country: ${location.country}`, 10, 120);
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'pt',
+      format: [1920, 1080],
+    });
 
-    if (capturedImage.startsWith('data:image')) {
-      pdf.addImage(capturedImage, 'PNG', 10, 130, 300, 160, undefined, 'SLOW', 1);
-    } else {
-      console.error('Invalid image format');
-      return;
-    }
+    // Draw the image full-screen
+    pdf.addImage(capturedImage, 'JPEG', 0, 0, 1920, 1080);
+
+    // Add overlay text
+    pdf.setTextColor(255, 255, 255); // white text
+    pdf.setFontSize(20);
+    const overlayYStart = 50;
+    const lineSpacing = 30;
+    const leftMargin = 50;
+
+    const lines = [
+      `Latitude: ${location.latitude}`,
+      `Longitude: ${location.longitude}`,
+      `City: ${location.city}`,
+      `Street: ${location.street}`,
+      `House Number: ${location.houseNumber}`,
+      `Building: ${location.building}`,
+      `Floor: ${selectedFloor}`,
+      `Type: ${selectedType}`,
+      `Description: ${selectedDescription}`,
+      `Date & Time: ${location.timestamp}`,
+      `Country: ${location.country}`,
+    ];
+
+    lines.forEach((line, index) => {
+      pdf.text(line, leftMargin, overlayYStart + index * lineSpacing);
+    });
 
     const pdfBlob = pdf.output('blob');
     const reader = new FileReader();

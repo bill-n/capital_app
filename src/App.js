@@ -21,7 +21,7 @@ function App() {
     city: '',
     country: '',
     street: '',
-    building: '',
+    // building: '',
     houseNumber: '',
     timestamp: '',
   });
@@ -67,7 +67,7 @@ function App() {
             city: data.address?.city || '',
             country: data.address?.country || '',
             street: data.address?.road || '',
-            building: data.address?.building || '',
+            // building: data.address?.building || '',
             houseNumber: data.address?.house_number || 'Not available',
             timestamp,
           });
@@ -103,7 +103,7 @@ function App() {
     if (imageSrc) {
       setCapturedImage(imageSrc);
     } else {
-      alert('Failed to capture image. Please try again.');
+      toast.error('Failed to capture image. Please try again.');
     }
   };
 
@@ -135,7 +135,7 @@ function App() {
       `City: ${location.city}`,
       `Street: ${location.street}`,
       `House Number: ${location.houseNumber}`,
-      `Building: ${location.building}`,
+      // `Building: ${location.building}`,
       `Floor: ${selectedFloor}`,
       `Type: ${selectedType}`,
       `Description: ${selectedDescription}`,
@@ -209,7 +209,6 @@ function App() {
 
       toast.success('Email sent successfully!');
     } catch (error) {
-      console.error('Email send error:', error);
       toast.error('Failed to send email. See console for details.');
     }
   };
@@ -294,7 +293,7 @@ function App() {
               <p>City: {location.city}</p>
               <p>Street: {location.street}</p>
               <p>House Number: {location.houseNumber}</p>
-              <p>Building: {location.building}</p>
+              {/* <p>Building: {location.building}</p> */}
               <p>Floor: {selectedFloor}</p>
               <p>Type: {selectedType}</p>
               <p>Description: {selectedDescription}</p>

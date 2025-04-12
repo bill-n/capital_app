@@ -21,7 +21,6 @@ function App() {
     city: '',
     country: '',
     street: '',
-    // building: '',
     houseNumber: '',
     timestamp: '',
   });
@@ -67,7 +66,6 @@ function App() {
             city: data.address?.city || '',
             country: data.address?.country || '',
             street: data.address?.road || '',
-            // building: data.address?.building || '',
             houseNumber: data.address?.house_number || 'Not available',
             timestamp,
           });
@@ -79,7 +77,6 @@ function App() {
             city: '',
             country: '',
             street: '',
-            building: '',
             houseNumber: 'Not available',
             timestamp,
           });
@@ -107,11 +104,43 @@ function App() {
     }
   };
 
+  // Function to adjust brightness of the image using canvas
+  const adjustImageBrightness = (imageSrc, brightness) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = imageSrc;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        // Draw the image to canvas
+        ctx.drawImage(img, 0, 0);
+
+        // Apply brightness filter
+        ctx.filter = `brightness(${brightness})`;
+        ctx.drawImage(img, 0, 0);
+
+        // Get the modified image
+        const modifiedImage = canvas.toDataURL('image/jpeg');
+        resolve(modifiedImage);
+      };
+      img.onerror = (error) => {
+        reject(error);
+      };
+    });
+  };
+
   const sendEmail = async () => {
     if (!capturedImage) {
       toast.warn('No image captured. Please take a picture first.');
       return;
     }
+
+    // Adjust brightness of the image before adding to PDF
+    const brightness = 2.5; // Example brightness level (can be adjusted)
+    const brightImage = await adjustImageBrightness(capturedImage, brightness);
 
     const pdf = new jsPDF({
       orientation: 'landscape',
@@ -119,8 +148,8 @@ function App() {
       format: [1920, 1080],
     });
 
-    // Draw the image full-screen
-    pdf.addImage(capturedImage, 'JPEG', 0, 0, 1920, 1080);
+    // Add the adjusted image to the PDF
+    pdf.addImage(brightImage, 'JPEG', 0, 0, 1920, 1080);
 
     // Add overlay text
     pdf.setTextColor(255, 255, 255); // white text
@@ -135,7 +164,6 @@ function App() {
       `City: ${location.city}`,
       `Street: ${location.street}`,
       `House Number: ${location.houseNumber}`,
-      // `Building: ${location.building}`,
       `Floor: ${selectedFloor}`,
       `Type: ${selectedType}`,
       `Description: ${selectedDescription}`,
@@ -293,7 +321,6 @@ function App() {
               <p>City: {location.city}</p>
               <p>Street: {location.street}</p>
               <p>House Number: {location.houseNumber}</p>
-              {/* <p>Building: {location.building}</p> */}
               <p>Floor: {selectedFloor}</p>
               <p>Type: {selectedType}</p>
               <p>Description: {selectedDescription}</p>

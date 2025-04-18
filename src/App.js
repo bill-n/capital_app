@@ -139,7 +139,7 @@ function App() {
     }
 
     // Adjust brightness of the image before adding to PDF
-    const brightness = 2.5; // Example brightness level (can be adjusted)
+    const brightness = 2.0; // Example brightness level (can be adjusted)
     const brightImage = await adjustImageBrightness(capturedImage, brightness);
 
     const pdf = new jsPDF({

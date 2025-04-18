@@ -139,7 +139,7 @@ function App() {
     }
 
     // Adjust brightness of the image before adding to PDF
-    const brightness = 2.0; // Example brightness level (can be adjusted)
+    const brightness = 1.8; // Example brightness level (can be adjusted)
     const brightImage = await adjustImageBrightness(capturedImage, brightness);
 
     const pdf = new jsPDF({
@@ -152,8 +152,8 @@ function App() {
     pdf.addImage(brightImage, 'JPEG', 0, 0, 1920, 1080);
 
     // Add overlay text
-    pdf.setTextColor(255, 255, 255); // white text
-    pdf.setFontSize(20);
+    pdf.setTextColor(178,34,34); // red text
+    pdf.setFontSize(30);
     const overlayYStart = 50;
     const lineSpacing = 30;
     const leftMargin = 50;
@@ -168,7 +168,7 @@ function App() {
       `Type: ${selectedType}`,
       `Description: ${selectedDescription}`,
       `Date & Time: ${location.timestamp}`,
-      `Country: ${location.country}`,
+      // `Country: ${location.country}`,
     ];
 
     lines.forEach((line, index) => {

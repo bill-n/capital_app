@@ -185,7 +185,8 @@ function App() {
   };
 
   const sendGmail = async (base64data) => {
-    const accessToken = gapi.auth.getToken()?.access_token;
+    const accessToken = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
+
 
     if (!accessToken) {
       toast.warn('Not authorized. Please sign in again.');

@@ -21,6 +21,7 @@ function App() {
     city: '',
     country: '',
     street: '',
+    // landmark:'',
     houseNumber: '',
     timestamp: '',
   });
@@ -54,32 +55,38 @@ function App() {
       navigator.geolocation.getCurrentPosition(async (position) => {
         const { latitude, longitude } = position.coords;
         const timestamp = new Date().toLocaleString();
+
         try {
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
           );
           const data = await response.json();
 
-          setLocation({
-            latitude,
-            longitude,
-            city: data.address?.city || '',
-            country: data.address?.country || '',
-            street: data.address?.road || '',
-            houseNumber: data.address?.house_number || 'Not available',
-            timestamp,
-          });
+          if (data.status === 'OK' && data.results.length > 0) {
+            const addressComponents = data.results[0].address_components;
+            const getAddressComponent = (types) =>
+              addressComponents.find((comp) =>
+                types.every((type) => comp.types.includes(type))
+              )?.long_name || '';
+            const landmark = getAddressComponent(['point_of_interest']) ||
+                   getAddressComponent(['premise']) ||
+                   getAddressComponent(['establishment']) ||
+                   'Not available';
+
+            setLocation({
+              latitude,
+              longitude,
+              city: getAddressComponent(['locality']),
+              country: getAddressComponent(['country']),
+              street: getAddressComponent(['route']),
+              houseNumber: getAddressComponent(['street_number']) || 'Not available',
+              timestamp,landmark
+            });
+          } else {
+            console.warn('No address found from Google Geocoding');
+          }
         } catch (error) {
           console.error('Error fetching location:', error);
-          setLocation({
-            latitude,
-            longitude,
-            city: '',
-            country: '',
-            street: '',
-            houseNumber: 'Not available',
-            timestamp,
-          });
         }
       });
     }
@@ -104,7 +111,6 @@ function App() {
     }
   };
 
-  // Function to adjust brightness of the image using canvas
   const adjustImageBrightness = (imageSrc, brightness) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -115,20 +121,14 @@ function App() {
         canvas.width = img.width;
         canvas.height = img.height;
 
-        // Draw the image to canvas
         ctx.drawImage(img, 0, 0);
-
-        // Apply brightness filter
         ctx.filter = `brightness(${brightness})`;
         ctx.drawImage(img, 0, 0);
 
-        // Get the modified image
         const modifiedImage = canvas.toDataURL('image/jpeg');
         resolve(modifiedImage);
       };
-      img.onerror = (error) => {
-        reject(error);
-      };
+      img.onerror = (error) => reject(error);
     });
   };
 
@@ -138,8 +138,7 @@ function App() {
       return;
     }
 
-    // Adjust brightness of the image before adding to PDF
-    const brightness = 1.6; // Example brightness level (can be adjusted)
+    const brightness = 1.6;
     const brightImage = await adjustImageBrightness(capturedImage, brightness);
 
     const pdf = new jsPDF({
@@ -148,12 +147,11 @@ function App() {
       format: [1920, 1080],
     });
 
-    // Add the adjusted image to the PDF
     pdf.addImage(brightImage, 'JPEG', 0, 0, 1920, 1080);
 
-    // Add overlay text
-    pdf.setTextColor(178,34,34); // red text
+    pdf.setTextColor(178, 34, 34);
     pdf.setFontSize(30);
+
     const overlayYStart = 50;
     const lineSpacing = 30;
     const leftMargin = 50;
@@ -164,11 +162,11 @@ function App() {
       `City: ${location.city}`,
       `Street: ${location.street}`,
       `House Number: ${location.houseNumber}`,
+      // `Landmark: ${location.landmark}`,
       `Floor: ${selectedFloor}`,
       `Type: ${selectedType}`,
       `Description: ${selectedDescription}`,
-      `Date & Time: ${location.timestamp}`,
-      // `Country: ${location.country}`,
+      `Date & Time: ${location.timestamp}`
     ];
 
     lines.forEach((line, index) => {
@@ -186,7 +184,6 @@ function App() {
 
   const sendGmail = async (base64data) => {
     const accessToken = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
-
 
     if (!accessToken) {
       toast.warn('Not authorized. Please sign in again.');
@@ -322,6 +319,7 @@ function App() {
               <p>City: {location.city}</p>
               <p>Street: {location.street}</p>
               <p>House Number: {location.houseNumber}</p>
+              {/* <p>Landmark: {location.landmark}</p> */}
               <p>Floor: {selectedFloor}</p>
               <p>Type: {selectedType}</p>
               <p>Description: {selectedDescription}</p>

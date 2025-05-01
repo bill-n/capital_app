@@ -21,7 +21,7 @@ function App() {
     city: '',
     country: '',
     street: '',
-    // landmark:'',
+    landmark:'',
     houseNumber: '',
     timestamp: '',
   });
@@ -162,7 +162,7 @@ function App() {
       `City: ${location.city}`,
       `Street: ${location.street}`,
       `House Number: ${location.houseNumber}`,
-      // `Landmark: ${location.landmark}`,
+      `Landmark: ${location.landmark}`,
       `Floor: ${selectedFloor}`,
       `Type: ${selectedType}`,
       `Description: ${selectedDescription}`,
@@ -235,7 +235,7 @@ function App() {
 
       toast.success('Email sent successfully!');
     } catch (error) {
-      toast.error('Failed to send email. See console for details.');
+      toast.error('Failed to send email');
     }
   };
 
@@ -319,7 +319,7 @@ function App() {
               <p>City: {location.city}</p>
               <p>Street: {location.street}</p>
               <p>House Number: {location.houseNumber}</p>
-              {/* <p>Landmark: {location.landmark}</p> */}
+              <p>Landmark: {location.landmark}</p>
               <p>Floor: {selectedFloor}</p>
               <p>Type: {selectedType}</p>
               <p>Description: {selectedDescription}</p>

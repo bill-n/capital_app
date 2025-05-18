@@ -148,12 +148,11 @@ function App() {
     });
 
     pdf.addImage(brightImage, 'JPEG', 0, 0, 1920, 1080);
-
     pdf.setTextColor(0,0,0);
     pdf.setFontSize(35);
 
     const overlayYStart = 50;
-    const lineSpacing = 30;
+    // const lineSpacing = 30;
     const leftMargin = 50;
 
     const lines = [
@@ -169,9 +168,33 @@ function App() {
       `Date & Time: ${location.timestamp}`
     ];
     
-    lines.forEach((line, index) => {
-      pdf.text(line, leftMargin, overlayYStart + index * lineSpacing);
-    });
+    // lines.forEach((line, index) => {
+    //   pdf.text(line, leftMargin, overlayYStart + index * lineSpacing);
+    // });
+
+  const fontSize = 35;
+pdf.setFontSize(fontSize);
+
+const lineSpacing = fontSize * 1.8; // vertical distance between boxes
+const boxPaddingX = fontSize * 0.5; // horizontal padding inside box
+const boxPaddingY = fontSize * 0.4; // vertical padding inside box
+
+lines.forEach((line, index) => {
+  const textWidth = pdf.getTextWidth(line);
+  const boxWidth = textWidth + boxPaddingX * 2;
+  const boxHeight = fontSize + boxPaddingY * 2;
+
+  const x = leftMargin;
+  const y = overlayYStart + index * lineSpacing;
+
+  // Draw black rectangle background
+  pdf.setFillColor(0, 0, 0);
+  pdf.rect(x, y, boxWidth, boxHeight, 'F');
+
+  // Write white text inside box
+  pdf.setTextColor(255, 255, 255);
+  pdf.text(line, x + boxPaddingX, y + fontSize + boxPaddingY / 2);
+});
 
     const pdfBlob = pdf.output('blob');
     const reader = new FileReader();

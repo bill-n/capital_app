@@ -45,7 +45,7 @@ function App() {
           setGoogleAuthReady(true);
         })
         .catch((error) => {
-          console.error('Error loading GAPI:', error);
+          toast.error('Error loading GAPI:', error);
         });
     }
 
@@ -83,10 +83,10 @@ function App() {
               timestamp,landmark
             });
           } else {
-            console.warn('No address found from Google Geocoding');
+            toast.warn('No address found from Google Geocoding');
           }
         } catch (error) {
-          console.error('Error fetching location:', error);
+          toast.error('Error fetching location:', error);
         }
       });
     }
@@ -149,8 +149,8 @@ function App() {
 
     pdf.addImage(brightImage, 'JPEG', 0, 0, 1920, 1080);
 
-    pdf.setTextColor(178, 34, 34);
-    pdf.setFontSize(30);
+    pdf.setTextColor(0,0,0);
+    pdf.setFontSize(35);
 
     const overlayYStart = 50;
     const lineSpacing = 30;
@@ -168,7 +168,7 @@ function App() {
       `Description: ${selectedDescription}`,
       `Date & Time: ${location.timestamp}`
     ];
-
+    
     lines.forEach((line, index) => {
       pdf.text(line, leftMargin, overlayYStart + index * lineSpacing);
     });

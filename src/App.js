@@ -10,7 +10,7 @@ const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 const SCOPES = process.env.REACT_APP_GOOGLE_SCOPE;
 
 function App() {
-  const [capturedImage, setCapturedImage] = useState(null);
+  const [capturedImages, setCapturedImages] = useState([]);
   const [selectedFloor, setSelectedFloor] = useState('1');
   const [selectedType, setSelectedType] = useState('Classroom');
   const [selectedDescription, setSelectedDescription] = useState('Clean');
@@ -21,10 +21,13 @@ function App() {
     city: '',
     country: '',
     street: '',
-    landmark:'',
+    landmark: '',
     houseNumber: '',
     timestamp: '',
   });
+  const [pdfPreview, setPdfPreview] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const webcamRef = useRef(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [googleAuthReady, setGoogleAuthReady] = useState(false);
@@ -33,10 +36,7 @@ function App() {
   useEffect(() => {
     function start() {
       gapi.client
-        .init({
-          clientId: CLIENT_ID,
-          scope: SCOPES,
-        })
+        .init({ clientId: CLIENT_ID, scope: SCOPES })
         .then(() => {
           const authInstance = gapi.auth2.getAuthInstance();
           authInstanceRef.current = authInstance;
@@ -55,23 +55,22 @@ function App() {
       navigator.geolocation.getCurrentPosition(async (position) => {
         const { latitude, longitude } = position.coords;
         const timestamp = new Date().toLocaleString();
-
         try {
           const response = await fetch(
             `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
           );
           const data = await response.json();
-
           if (data.status === 'OK' && data.results.length > 0) {
             const addressComponents = data.results[0].address_components;
             const getAddressComponent = (types) =>
               addressComponents.find((comp) =>
                 types.every((type) => comp.types.includes(type))
               )?.long_name || '';
-            const landmark = getAddressComponent(['point_of_interest']) ||
-                   getAddressComponent(['premise']) ||
-                   getAddressComponent(['establishment']) ||
-                   'Not available';
+            const landmark =
+              getAddressComponent(['point_of_interest']) ||
+              getAddressComponent(['premise']) ||
+              getAddressComponent(['establishment']) ||
+              'Not available';
 
             setLocation({
               latitude,
@@ -80,7 +79,8 @@ function App() {
               country: getAddressComponent(['country']),
               street: getAddressComponent(['route']),
               houseNumber: getAddressComponent(['street_number']) || 'Not available',
-              timestamp,landmark
+              timestamp,
+              landmark,
             });
           } else {
             toast.warn('No address found from Google Geocoding');
@@ -105,10 +105,14 @@ function App() {
   const captureImage = () => {
     const imageSrc = webcamRef.current?.getScreenshot();
     if (imageSrc) {
-      setCapturedImage(imageSrc);
+      setCapturedImages((prev) => [...prev, imageSrc]);
     } else {
       toast.error('Failed to capture image. Please try again.');
     }
+  };
+
+  const removeImage = (index) => {
+    setCapturedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const adjustImageBrightness = (imageSrc, brightness) => {
@@ -120,82 +124,68 @@ function App() {
         const ctx = canvas.getContext('2d');
         canvas.width = img.width;
         canvas.height = img.height;
-
         ctx.drawImage(img, 0, 0);
         ctx.filter = `brightness(${brightness})`;
         ctx.drawImage(img, 0, 0);
-
-        const modifiedImage = canvas.toDataURL('image/jpeg');
-        resolve(modifiedImage);
+        resolve(canvas.toDataURL('image/jpeg'));
       };
       img.onerror = (error) => reject(error);
     });
   };
 
+  const generatePdf = async () => {
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [1920, 1080] });
+    for (let i = 0; i < capturedImages.length; i++) {
+      if (i !== 0) pdf.addPage();
+      const brightImage = await adjustImageBrightness(capturedImages[i], 1.6);
+      pdf.addImage(brightImage, 'JPEG', 0, 0, 1920, 1080);
+      const lines = [
+        `Latitude: ${location.latitude}`,
+        `Longitude: ${location.longitude}`,
+        `City: ${location.city}`,
+        `Street: ${location.street}`,
+        `House Number: ${location.houseNumber}`,
+        `Landmark: ${location.landmark}`,
+        `Floor: ${selectedFloor}`,
+        `Type: ${selectedType}`,
+        `Description: ${selectedDescription}`,
+        `Date & Time: ${location.timestamp}`,
+      ];
+      const fontSize = 35;
+      const lineSpacing = fontSize * 1.8;
+      const boxPaddingX = fontSize * 0.5;
+      const boxPaddingY = fontSize * 0.4;
+      const leftMargin = 50;
+      pdf.setFontSize(fontSize);
+      lines.forEach((line, index) => {
+        const textWidth = pdf.getTextWidth(line);
+        const boxWidth = textWidth + boxPaddingX * 2;
+        const boxHeight = fontSize + boxPaddingY * 2;
+        const x = leftMargin;
+        const y = 50 + index * lineSpacing;
+        pdf.setFillColor(0, 0, 0);
+        pdf.rect(x, y, boxWidth, boxHeight, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.text(line, x + boxPaddingX, y + fontSize + boxPaddingY / 2);
+      });
+    }
+    return pdf;
+  };
+
+  const previewPdf = async () => {
+    const pdf = await generatePdf();
+    const blob = pdf.output('blob');
+    const url = URL.createObjectURL(blob);
+    setPdfPreview(url);
+    setIsModalOpen(true);
+  };
+
   const sendEmail = async () => {
-    if (!capturedImage) {
-      toast.warn('No image captured. Please take a picture first.');
+    if (capturedImages.length === 0) {
+      toast.warn('No images captured.');
       return;
     }
-
-    const brightness = 1.6;
-    const brightImage = await adjustImageBrightness(capturedImage, brightness);
-
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'pt',
-      format: [1920, 1080],
-    });
-
-    pdf.addImage(brightImage, 'JPEG', 0, 0, 1920, 1080);
-    pdf.setTextColor(0,0,0);
-    pdf.setFontSize(35);
-
-    const overlayYStart = 50;
-    // const lineSpacing = 30;
-    const leftMargin = 50;
-
-    const lines = [
-      `Latitude: ${location.latitude}`,
-      `Longitude: ${location.longitude}`,
-      `City: ${location.city}`,
-      `Street: ${location.street}`,
-      `House Number: ${location.houseNumber}`,
-      `Landmark: ${location.landmark}`,
-      `Floor: ${selectedFloor}`,
-      `Type: ${selectedType}`,
-      `Description: ${selectedDescription}`,
-      `Date & Time: ${location.timestamp}`
-    ];
-    
-    // lines.forEach((line, index) => {
-    //   pdf.text(line, leftMargin, overlayYStart + index * lineSpacing);
-    // });
-
-  const fontSize = 35;
-pdf.setFontSize(fontSize);
-
-const lineSpacing = fontSize * 1.8; // vertical distance between boxes
-const boxPaddingX = fontSize * 0.5; // horizontal padding inside box
-const boxPaddingY = fontSize * 0.4; // vertical padding inside box
-
-lines.forEach((line, index) => {
-  const textWidth = pdf.getTextWidth(line);
-  const boxWidth = textWidth + boxPaddingX * 2;
-  const boxHeight = fontSize + boxPaddingY * 2;
-
-  const x = leftMargin;
-  const y = overlayYStart + index * lineSpacing;
-
-  // Draw black rectangle background
-  pdf.setFillColor(0, 0, 0);
-  pdf.rect(x, y, boxWidth, boxHeight, 'F');
-
-  // Write white text inside box
-  pdf.setTextColor(255, 255, 255);
-  pdf.text(line, x + boxPaddingX, y + fontSize + boxPaddingY / 2);
-});
-
+    const pdf = await generatePdf();
     const pdfBlob = pdf.output('blob');
     const reader = new FileReader();
     reader.readAsDataURL(pdfBlob);
@@ -207,7 +197,6 @@ lines.forEach((line, index) => {
 
   const sendGmail = async (base64data) => {
     const accessToken = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
-
     if (!accessToken) {
       toast.warn('Not authorized. Please sign in again.');
       return;
@@ -245,17 +234,10 @@ lines.forEach((line, index) => {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          raw: base64EncodedEmail,
-        }),
+        body: JSON.stringify({ raw: base64EncodedEmail }),
       });
 
-      if (!response.ok) {
-        const errData = await response.json();
-        console.error('Error response from Gmail API:', errData);
-        throw new Error(errData.error?.message || 'Failed to send email');
-      }
-
+      if (!response.ok) throw new Error('Failed to send email');
       toast.success('Email sent successfully!');
     } catch (error) {
       toast.error('Failed to send email');
@@ -271,22 +253,13 @@ lines.forEach((line, index) => {
       </h1>
 
       {!isAuthorized && (
-        <button
-          onClick={signIn}
-          className="google-signin-btn"
-          disabled={!googleAuthReady}
-        >
+        <button onClick={signIn} className="google-signin-btn" disabled={!googleAuthReady}>
           {googleAuthReady ? 'Sign in with Google' : 'Initializing...'}
         </button>
       )}
 
       <div className="camera-selector">
-        <select
-          id="cameraSelect"
-          value={facingMode}
-          onChange={(e) => setFacingMode(e.target.value)}
-          className="styled-select"
-        >
+        <select value={facingMode} onChange={(e) => setFacingMode(e.target.value)} className="styled-select">
           <option value="user">Front Camera</option>
           <option value="environment">Back Camera</option>
         </select>
@@ -328,29 +301,62 @@ lines.forEach((line, index) => {
 
       <ToastContainer position="bottom-right" autoClose={3000} />
 
-      <button onClick={captureImage} className="capture-btn">
-        Capture Image
-      </button>
+      <button onClick={captureImage} className="capture-btn">Capture Image</button>
 
-      {capturedImage && (
+      {capturedImages.length > 0 && (
         <div className="captured-image-container">
-          <div className="captured-image">
-            <img src={capturedImage} alt="Captured" />
-            <div className="image-overlay">
-              <p>Latitude: {location.latitude}</p>
-              <p>Longitude: {location.longitude}</p>
-              <p>City: {location.city}</p>
-              <p>Street: {location.street}</p>
-              <p>House Number: {location.houseNumber}</p>
-              <p>Landmark: {location.landmark}</p>
-              <p>Floor: {selectedFloor}</p>
-              <p>Type: {selectedType}</p>
-              <p>Description: {selectedDescription}</p>
-            </div>
+          <div className="captured-image" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            {capturedImages.map((img, idx) => (
+              <div key={idx} style={{ position: 'relative' }}>
+                <img src={img} alt={`Captured ${idx}`} style={{ maxWidth: '150px' }} />
+                <button
+                  onClick={() => removeImage(idx)}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    background: 'red',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
           </div>
-          <button onClick={sendEmail} className="email-btn">
-            Send Email
-          </button>
+
+          <button onClick={previewPdf} className="email-btn">Preview PDF</button>
+          <br/>
+          <button onClick={sendEmail} className="email-btn">Send Email</button>
+        </div>
+      )}
+
+      {isModalOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0,
+          width: '100%', height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: '#fff', padding: '10px', borderRadius: '8px',
+            maxWidth: '90%', maxHeight: '90%', overflow: 'auto'
+          }}>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              style={{
+                position: 'absolute', top: 20, right: 20,
+                background: 'red', color: 'white', border: 'none',
+                fontSize: '20px', cursor: 'pointer'
+              }}
+            >
+              X
+            </button>
+            <iframe src={pdfPreview} title="PDF Preview" style={{ width: '100%', height: '80vh' }} />
+          </div>
         </div>
       )}
     </div>

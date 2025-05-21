@@ -470,6 +470,18 @@ body {
   font-weight: 600;
   color: #222;
 }
+.preview-btn {
+  background-color: #c4aa6a;
+  color: white;
+  padding: 10px 16px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.preview-btn:hover {
+  background-color: #b3995c;
+}
 
 .styled-select {
   padding: 0.5rem 0.75rem;
@@ -489,3 +501,18 @@ body {
   outline: none;
   background-color: #fff;
 }
+
+.captured-image-wrapper {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s ease;
+}
+
+/* Needed to support react-beautiful-dnd drag animations */
+.captured-image-list {
+  display: flex;
+  overflow-x: auto;
+}
+
+

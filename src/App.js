@@ -165,7 +165,7 @@ const generatePdf = async () => {
   const totalPages = capturedImages.length + 1; // 1 for the cover page
 
   // First Page: Facility Header + Logo + Reporter Footer
-  const logoBase64 = await getBase64ImageFromURL('use.png');
+  const capital_image_template = await getBase64ImageFromURL('capital_image_template.png');
 
   // Header - Facility Name
   pdf.setFontSize(60);
@@ -179,7 +179,7 @@ const generatePdf = async () => {
   const logoHeight = 900;
   const logoX = (1920 - logoWidth) / 2;
   const logoY = 150;
-  pdf.addImage(logoBase64, 'PNG', logoX, logoY, logoWidth, logoHeight);
+  pdf.addImage(capital_image_template, 'PNG', logoX, logoY, logoWidth, logoHeight);
 
   // Footer - Reporter Name
   pdf.setFontSize(60);
@@ -193,15 +193,11 @@ const generatePdf = async () => {
   const firstPageNumber = `Page 1 of ${totalPages}`;
   const firstPageNumberWidth = pdf.getTextWidth(firstPageNumber);
   pdf.text(firstPageNumber, 1920 - firstPageNumberWidth - 50, 1150); // bottom-right
-
-
   
   // Captured Images Pages
 for (let i = 0; i < capturedImages.length; i++) {
   pdf.addPage();
-
   const brightImage = await adjustImageBrightness(capturedImages[i], 1.6);
-
   const imageWidth = 900;
   const imageHeight = 900;
   const margin = 150;
@@ -269,16 +265,9 @@ pdf.setFontSize(40);
 pdf.setTextColor(100, 100, 100);
 pdf.text(pageText, 1920 - pageTextWidth - 50, 1150); // bottom-right
 
-
 }
-
-
-
   return pdf;
 };
-
-
-
 
   const previewPdf = async () => {
     const pdf = await generatePdf();

@@ -14,6 +14,7 @@ function App() {
   const [selectedFloor, setSelectedFloor] = useState('1');
   const [selectedType, setSelectedType] = useState('Classroom');
   const [selectedDescription, setSelectedDescription] = useState('Clean');
+  const [reporterName, setReporterName] = useState('');
   const [facingMode, setFacingMode] = useState('environment');
   const [location, setLocation] = useState({
     latitude: null,
@@ -22,12 +23,12 @@ function App() {
     country: '',
     street: '',
     landmark: '',
+    zipcode: '',
     houseNumber: '',
     timestamp: '',
   });
   const [pdfPreview, setPdfPreview] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const webcamRef = useRef(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [googleAuthReady, setGoogleAuthReady] = useState(false);
@@ -45,7 +46,8 @@ function App() {
           setGoogleAuthReady(true);
         })
         .catch((error) => {
-          toast.error('Error loading GAPI:', error);
+          toast.error('Error loading GAPI');
+          console.error(error);
         });
     }
 
@@ -71,6 +73,7 @@ function App() {
               getAddressComponent(['premise']) ||
               getAddressComponent(['establishment']) ||
               'Not available';
+            const zipcode = getAddressComponent(['postal_code']) || '';
 
             setLocation({
               latitude,
@@ -79,6 +82,7 @@ function App() {
               country: getAddressComponent(['country']),
               street: getAddressComponent(['route']),
               houseNumber: getAddressComponent(['street_number']) || 'Not available',
+              zipcode,
               timestamp,
               landmark,
             });
@@ -86,7 +90,8 @@ function App() {
             toast.warn('No address found from Google Geocoding');
           }
         } catch (error) {
-          toast.error('Error fetching location:', error);
+          toast.error('Error fetching location');
+          console.error(error);
         }
       });
     }
@@ -98,16 +103,20 @@ function App() {
         setIsAuthorized(true);
       });
     } else {
-      toast.warn('Google Auth not initialized yet. Please try again.');
+      toast.warn('Google Auth not initialized yet.');
     }
   };
 
   const captureImage = () => {
+    // if (!reporterName.trim()) {
+    //   toast.warn('Please enter reporter name.');
+    //   return;
+    // }
     const imageSrc = webcamRef.current?.getScreenshot();
     if (imageSrc) {
       setCapturedImages((prev) => [...prev, imageSrc]);
     } else {
-      toast.error('Failed to capture image. Please try again.');
+      toast.error('Failed to capture image.');
     }
   };
 
@@ -133,44 +142,88 @@ function App() {
     });
   };
 
-  const generatePdf = async () => {
-    const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [1920, 1080] });
-    for (let i = 0; i < capturedImages.length; i++) {
-      if (i !== 0) pdf.addPage();
-      const brightImage = await adjustImageBrightness(capturedImages[i], 1.6);
-      pdf.addImage(brightImage, 'JPEG', 0, 0, 1920, 1080);
-      const lines = [
-        `Latitude: ${location.latitude}`,
-        `Longitude: ${location.longitude}`,
-        `City: ${location.city}`,
-        `Street: ${location.street}`,
-        `House Number: ${location.houseNumber}`,
-        `Landmark: ${location.landmark}`,
-        `Floor: ${selectedFloor}`,
-        `Type: ${selectedType}`,
-        `Description: ${selectedDescription}`,
-        `Date & Time: ${location.timestamp}`,
-      ];
-      const fontSize = 35;
-      const lineSpacing = fontSize * 1.8;
-      const boxPaddingX = fontSize * 0.5;
-      const boxPaddingY = fontSize * 0.4;
-      const leftMargin = 50;
-      pdf.setFontSize(fontSize);
-      lines.forEach((line, index) => {
-        const textWidth = pdf.getTextWidth(line);
-        const boxWidth = textWidth + boxPaddingX * 2;
-        const boxHeight = fontSize + boxPaddingY * 2;
-        const x = leftMargin;
-        const y = 50 + index * lineSpacing;
-        pdf.setFillColor(0, 0, 0);
-        pdf.rect(x, y, boxWidth, boxHeight, 'F');
-        pdf.setTextColor(255, 255, 255);
-        pdf.text(line, x + boxPaddingX, y + fontSize + boxPaddingY / 2);
-      });
-    }
-    return pdf;
-  };
+ const generatePdf = async () => {
+  const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [1920, 1180] });
+
+  for (let i = 0; i < capturedImages.length; i++) {
+    if (i !== 0) pdf.addPage();
+
+    const brightImage = await adjustImageBrightness(capturedImages[i], 1.6);
+    const imageWidth = 1920;
+    const imageHeight = 900;
+
+    pdf.addImage(brightImage, 'JPEG', 0, 0, imageWidth, imageHeight);
+
+    // Draw top-right info
+    const topRightLines = [
+      `Latitude: ${location.latitude}`,
+      `Longitude: ${location.longitude}`,
+      `Zipcode: ${location.zipcode}`,
+      `Date & Time: ${location.timestamp}`,
+      `Floor: ${selectedFloor}`,
+      `Type: ${selectedType}`,
+      `Description: ${selectedDescription}`,
+      `Street: ${location.street}`,
+      `City: ${location.city}`,
+      `Country: ${location.country}`
+    ];
+
+    const topRightFontSize = 24;
+    const topRightMargin = 50;
+    const topStartY = 60;
+    pdf.setFontSize(topRightFontSize);
+    pdf.setTextColor(0, 0, 0);
+
+    topRightLines.forEach((line, idx) => {
+      const textWidth = pdf.getTextWidth(line);
+      const x = imageWidth - textWidth - topRightMargin;
+      const y = topStartY + idx * (topRightFontSize + 10);
+      pdf.text(line, x, y);
+    });
+
+    // Reporter centered below image
+// Reporter bottom-left below image
+      const reporterText = `Reported by: ${reporterName || 'N/A'}`;
+      pdf.setFontSize(32);
+      const reporterTextX = 50; // Left margin
+      const reporterTextY = imageHeight + 50; // Just below the image
+      pdf.text(reporterText, reporterTextX, reporterTextY);
+
+
+    // Draw metadata boxes
+    // const metadataLines = [
+    //   `Floor: ${selectedFloor}`,
+    //   `Type: ${selectedType}`,
+    //   `Description: ${selectedDescription}`,
+    //   `Street: ${location.street}`,
+    //   `City: ${location.city}`,
+    //   `Country: ${location.country}`,
+    //   `Landmark: ${location.landmark}`,
+    //   `House Number: ${location.houseNumber}`,
+    // ];
+    const fontSize = 25;
+    const lineSpacing = fontSize * 1.5;
+    const boxPaddingX = fontSize * 0.5;
+    const boxPaddingY = fontSize * 0.4;
+    const leftMargin = 50;
+    pdf.setFontSize(fontSize);
+
+    // metadataLines.forEach((line, index) => {
+    //   const textWidth = pdf.getTextWidth(line);
+    //   const boxWidth = textWidth + boxPaddingX * 2;
+    //   const boxHeight = fontSize + boxPaddingY * 2;
+    //   const x = leftMargin;
+    //   const y = imageHeight + 100 + index * lineSpacing;
+    //   pdf.setFillColor(0, 0, 0);
+    //   pdf.rect(x, y, boxWidth, boxHeight, 'F');
+    //   pdf.setTextColor(255, 255, 255);
+    //   pdf.text(line, x + boxPaddingX, y + fontSize + boxPaddingY / 2);
+    // });
+  }
+
+  return pdf;
+};
+
 
   const previewPdf = async () => {
     const pdf = await generatePdf();
@@ -212,7 +265,7 @@ function App() {
       '--boundary',
       'Content-Type: text/plain; charset=UTF-8',
       '',
-      'Here is the captured image and details.',
+      `Here is the captured image and details from reporter: ${reporterName || 'N/A'}.`,
       '--boundary',
       'Content-Type: application/pdf; name=captured-image.pdf',
       'Content-Transfer-Encoding: base64',
@@ -266,13 +319,33 @@ function App() {
       </div>
 
       <div className="camera-layout">
-        <div className="camera-container">
+        <div className="camera-container" style={{ position: 'relative' }}>
           <Webcam
             ref={webcamRef}
             screenshotFormat="image/jpeg"
             className="webcam"
             videoConstraints={{ facingMode }}
           />
+          <div style={{
+            position: 'absolute',
+            top: '10px',
+            right: '10px',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            color: 'white',
+            padding: '10px',
+            borderRadius: '8px',
+            fontSize: '12px',
+            maxWidth: '200px',
+            zIndex: 1,
+          }}>
+            <div><strong>Lat:</strong> {location.latitude?.toFixed(5)}</div>
+            <div><strong>Lng:</strong> {location.longitude?.toFixed(5)}</div>
+            <div><strong>City:</strong> {location.city}</div>
+            <div><strong>Street:</strong> {location.street}</div>
+            <div><strong>Landmark:</strong> {location.landmark}</div>
+            <div><strong>Zipcode:</strong> {location.zipcode}</div>
+            <div><strong>Time:</strong> {location.timestamp}</div>
+          </div>
         </div>
 
         <div className="dropdown-container">
@@ -296,6 +369,15 @@ function App() {
             <option value="Clean">Clean</option>
             <option value="Dirty">Dirty</option>
           </select>
+
+          <label>Reporter:</label>
+          <input
+            type="text"
+            value={reporterName}
+            onChange={(e) => setReporterName(e.target.value)}
+            placeholder="Enter reporter's name"
+            style={{ padding: '8px', marginBottom: '10px', width: '100%' }}
+          />
         </div>
       </div>
 
@@ -328,7 +410,7 @@ function App() {
           </div>
 
           <button onClick={previewPdf} className="email-btn">Preview PDF</button>
-          <br/>
+          <br />
           <button onClick={sendEmail} className="email-btn">Send Email</button>
         </div>
       )}
@@ -343,7 +425,8 @@ function App() {
         }}>
           <div style={{
             backgroundColor: '#fff', padding: '10px', borderRadius: '8px',
-            maxWidth: '90%', maxHeight: '90%', overflow: 'auto'
+            maxWidth: '90%', maxHeight: '90%', overflow: 'auto',
+            position: 'relative'
           }}>
             <button
               onClick={() => setIsModalOpen(false)}
@@ -355,7 +438,7 @@ function App() {
             >
               X
             </button>
-            <iframe src={pdfPreview} title="PDF Preview" style={{ width: '100%', height: '80vh' }} />
+            <iframe src={pdfPreview} title="PDF Preview" style={{ width: '900px', height: '90vh' }} />
           </div>
         </div>
       )}

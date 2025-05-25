@@ -164,17 +164,18 @@ const generatePdf = async () => {
   const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [1920, 1180] });
   const totalPages = capturedImages.length + 1; // 1 for the cover page
 
-  // First Page: Facility Header + Logo + Reporter Footer
+  // First Page: Capital Image Template + Logo + Reporter Footer
   const capital_image_template = await getBase64ImageFromURL('capital_image_template.png');
+  const capital_image_logo = await getBase64ImageFromURL('capital_image_logo.png');
 
   // Header - Facility Name
   pdf.setFontSize(60);
   pdf.setFont("helvetica", "normal");
   const titleText = facilityName;
   const titleWidth = pdf.getTextWidth(titleText);
-  pdf.text(titleText,50,100);
+  pdf.text(titleText, 50, 100);
 
-  // Logo
+  // Capital Infradienst Image Template
   const logoWidth = 1200;
   const logoHeight = 900;
   const logoX = (1920 - logoWidth) / 2;
@@ -182,92 +183,118 @@ const generatePdf = async () => {
   pdf.addImage(capital_image_template, 'PNG', logoX, logoY, logoWidth, logoHeight);
 
   // Footer - Reporter Name
-  pdf.setFontSize(60);
+  pdf.setFontSize(36);
   pdf.setFont("helvetica", "normal");
   const reporter = `${reporterName}`;
-  const reporterWidth = pdf.getTextWidth(reporter);
-  pdf.text(reporter,150, 1150);
+  pdf.text(reporter, 150, 1150);
+
   // Page number for the first page (cover)
   pdf.setFontSize(24);
   pdf.setTextColor(100, 100, 100);
   const firstPageNumber = `Page 1 of ${totalPages}`;
   const firstPageNumberWidth = pdf.getTextWidth(firstPageNumber);
   pdf.text(firstPageNumber, 1920 - firstPageNumberWidth - 50, 1150); // bottom-right
-  
+
   // Captured Images Pages
-for (let i = 0; i < capturedImages.length; i++) {
-  pdf.addPage();
-  const brightImage = await adjustImageBrightness(capturedImages[i], 1.6);
-  const imageWidth = 900;
-  const imageHeight = 900;
-  const margin = 150;
+  for (let i = 0; i < capturedImages.length; i++) {
+    pdf.addPage();
 
-  // Draw image on the left
-  pdf.addImage(brightImage, 'JPEG', 0, 0, imageWidth, imageHeight);
+    // HEADER for pages after the first
+    const headerLogoWidth = 60;
+    const headerLogoHeight = 60;
+    const headerLogoX = 50;
+    const headerLogoY = 40;
 
-  // Description vertically centered next to the image
-  const descriptionText = selectedDescription || "No description provided";
-  pdf.setFontSize(36);
-  pdf.setFont("helvetica", "normal");
-  pdf.setTextColor(50, 50, 50);
+    const headerTextX = headerLogoX + headerLogoWidth + 20;
+    const headerTextY = headerLogoY + headerLogoHeight / 2 + 10;
 
-  // Calculate Y to vertically center description text block roughly
-  // Estimate number of lines to center text block vertically
-  const descLines = pdf.splitTextToSize(descriptionText, 850);
-  const lineHeight = 36 * 1.2; // fontSize * lineSpacing approx
-  const descHeight = descLines.length * lineHeight;
-  const descriptionY = (imageHeight / 2) - (descHeight / 2);
+    // Draw logo
+    pdf.addImage(capital_image_logo, 'PNG', headerLogoX, headerLogoY, headerLogoWidth, headerLogoHeight);
 
-  const descriptionX = imageWidth + margin; // right of image + margin
-  pdf.text(descLines, descriptionX, descriptionY);
+    // Facility name as header
+    pdf.setFontSize(36);
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(facilityName, headerTextX, headerTextY);
 
-  // Metadata at top right corner of image box
-  const topRightLines = [
-    `Latitude: ${location.latitude}`,
-    `Longitude: ${location.longitude}`,
-    `Zipcode: ${location.zipcode}`,
-    `Date & Time: ${location.timestamp}`,
-    `Floor: ${selectedFloor}`,
-    `Type: ${selectedType}`,
-    `Street: ${location.street}`,
-    `City: ${location.city}`,
-    `Country: ${location.country}`
-  ];
+    // Underline
+    const underlineY = headerLogoY + headerLogoHeight + 10;
+    pdf.setDrawColor(0, 0, 0);
+    pdf.setLineWidth(1); // thin
+    pdf.line(40, underlineY, 1880, underlineY);
 
-  const topRightFontSize = 24;
-  const topRightMargin = 20; // small margin inside the image right side
-  const topStartY = 30; // margin from top of image box
+    // ====== BODY CONTENT BELOW HEADER ======
+    const verticalOffset = underlineY + 20; // enough space below underline
 
-  pdf.setFontSize(topRightFontSize);
-  pdf.setTextColor(0, 0, 0);
+    const brightImage = await adjustImageBrightness(capturedImages[i], 1.6);
+    const imageWidth = 900;
+    const imageHeight = 900;
+    const margin = 150;
+    const imageMarginLeft = 320; // <-- Increased left margin here
 
-  topRightLines.forEach((line, idx) => {
-    const textWidth = pdf.getTextWidth(line);
-    const x = imageWidth - textWidth - topRightMargin; // right edge of image minus margin and text width
-    const y = topStartY + idx * (topRightFontSize + 6);
-    pdf.text(line, x, y);
-  });
+    // Image on the left with increased margin
+    pdf.addImage(brightImage, 'JPEG', imageMarginLeft, verticalOffset, imageWidth, imageHeight);
 
-  // Footer with street info
-pdf.setDrawColor(0, 0, 0);  // black line
-pdf.setLineWidth(2.5);      // thickness of the line
-pdf.line(30, 1100, 1000, 1100);  // draw line from x=40 to x=1900 at y=1130
+    // Description next to the image (adjust X to new margin)
+    const descriptionText = selectedDescription || "No description provided";
+    pdf.setFontSize(36);
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(50, 50, 50);
 
-pdf.setFontSize(60);
-const locationFooter = `${location.street+',' || ''} ${location.houseNumber || ''} ${location.zipcode || ''} ${location.city || ''}`.trim();
-pdf.text(locationFooter, 50, 1150);
+    const descLines = pdf.splitTextToSize(descriptionText, 850);
+    const lineHeight = 36 * 1.2;
+    const descHeight = descLines.length * lineHeight;
+    const descriptionY = verticalOffset + (imageHeight / 2) - (descHeight / 2);
+    const descriptionX = imageMarginLeft + imageWidth + margin;
+    pdf.text(descLines, descriptionX, descriptionY);
 
-// Page number for image pages
-const pageNum = i + 2; // Page index (2nd page onwards)
-const pageText = `Page ${pageNum} of ${totalPages}`;
-const pageTextWidth = pdf.getTextWidth(pageText);
-pdf.setFontSize(40);
-pdf.setTextColor(100, 100, 100);
-pdf.text(pageText, 1920 - pageTextWidth - 50, 1150); // bottom-right
+    // Metadata at top right of image (adjust X for margin)
+    const topRightLines = [
+      `Latitude: ${location.latitude}`,
+      `Longitude: ${location.longitude}`,
+      `Zipcode: ${location.zipcode}`,
+      `Date & Time: ${location.timestamp}`,
+      `Floor: ${selectedFloor}`,
+      `Type: ${selectedType}`,
+      `Street: ${location.street}`,
+      `City: ${location.city}`,
+      `Country: ${location.country}`
+    ];
 
-}
+    const topRightFontSize = 24;
+    const topRightMargin = 20;
+    const topStartY = verticalOffset + 30;
+
+    pdf.setFontSize(topRightFontSize);
+    pdf.setTextColor(0, 0, 0);
+
+    topRightLines.forEach((line, idx) => {
+      const textWidth = pdf.getTextWidth(line);
+      const x = imageMarginLeft + imageWidth - textWidth - topRightMargin;
+      const y = topStartY + idx * (topRightFontSize + 6);
+      pdf.text(line, x, y);
+    });
+
+    // Footer line and address
+    pdf.setDrawColor(0, 0, 0);
+    pdf.setLineWidth(1);
+    pdf.line(30, 1100, 1000, 1100);
+
+    pdf.setFontSize(24);
+    const locationFooter = `${location.street + ',' || ''} ${location.houseNumber || ''} ${location.zipcode || ''} ${location.city || ''}`.trim();
+    pdf.text(locationFooter, 50, 1150);
+
+    // Page number
+    const pageNum = i + 2; // page 1 is the cover
+    const pageText = `Page ${pageNum} of ${totalPages}`;
+    const pageTextWidth = pdf.getTextWidth(pageText);
+    pdf.setFontSize(24);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text(pageText, 1920 - pageTextWidth - 50, 1150);
+  }
   return pdf;
 };
+
 
   const previewPdf = async () => {
     const pdf = await generatePdf();

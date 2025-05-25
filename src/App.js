@@ -15,6 +15,7 @@ function App() {
   const [selectedType, setSelectedType] = useState('Classroom');
   const [selectedDescription, setSelectedDescription] = useState('Clean');
   const [reporterName, setReporterName] = useState('');
+  const [facilityName, setfacilityName] = useState('');
   const [facingMode, setFacingMode] = useState('environment');
   const [location, setLocation] = useState({
     latitude: null,
@@ -142,11 +143,53 @@ function App() {
     });
   };
 
- const generatePdf = async () => {
+const getBase64ImageFromURL = (url) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = (error) => reject(error);
+    img.src = url;
+  });
+};
+
+const generatePdf = async () => {
   const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [1920, 1180] });
 
+  // First Page: Facility Header + Logo + Reporter Footer
+  const logoBase64 = await getBase64ImageFromURL('use.png');
+
+  // Header - Facility Name
+  pdf.setFontSize(60);
+  pdf.setFont("helvetica", "bold");
+  const titleText = facilityName;
+  const titleWidth = pdf.getTextWidth(titleText);
+  pdf.text(titleText, (1920 - titleWidth) / 2, 100);
+
+  // Logo
+  const logoWidth = 1200;
+  const logoHeight = 900;
+  const logoX = (1920 - logoWidth) / 2;
+  const logoY = 150;
+  pdf.addImage(logoBase64, 'PNG', logoX, logoY, logoWidth, logoHeight);
+
+  // Footer - Reporter Name
+  pdf.setFontSize(70);
+  pdf.setFont("helvetica", "normal");
+  const reporter = `${reporterName || 'N/A'}`;
+  const reporterWidth = pdf.getTextWidth(reporter);
+  pdf.text(reporter, (1920 - reporterWidth) / 2, 1150);
+
+  // Captured Images Pages
   for (let i = 0; i < capturedImages.length; i++) {
-    if (i !== 0) pdf.addPage();
+    pdf.addPage();
 
     const brightImage = await adjustImageBrightness(capturedImages[i], 1.6);
     const imageWidth = 1920;
@@ -154,7 +197,7 @@ function App() {
 
     pdf.addImage(brightImage, 'JPEG', 0, 0, imageWidth, imageHeight);
 
-    // Draw top-right info
+    // Top-right Metadata
     const topRightLines = [
       `Latitude: ${location.latitude}`,
       `Longitude: ${location.longitude}`,
@@ -181,48 +224,17 @@ function App() {
       pdf.text(line, x, y);
     });
 
-    // Reporter centered below image
-// Reporter bottom-left below image
-      const reporterText = `Reported by: ${reporterName || 'N/A'}`;
-      pdf.setFontSize(32);
-      const reporterTextX = 50; // Left margin
-      const reporterTextY = imageHeight + 50; // Just below the image
-      pdf.text(reporterText, reporterTextX, reporterTextY);
-
-
-    // Draw metadata boxes
-    // const metadataLines = [
-    //   `Floor: ${selectedFloor}`,
-    //   `Type: ${selectedType}`,
-    //   `Description: ${selectedDescription}`,
-    //   `Street: ${location.street}`,
-    //   `City: ${location.city}`,
-    //   `Country: ${location.country}`,
-    //   `Landmark: ${location.landmark}`,
-    //   `House Number: ${location.houseNumber}`,
-    // ];
-    const fontSize = 25;
-    const lineSpacing = fontSize * 1.5;
-    const boxPaddingX = fontSize * 0.5;
-    const boxPaddingY = fontSize * 0.4;
-    const leftMargin = 50;
-    pdf.setFontSize(fontSize);
-
-    // metadataLines.forEach((line, index) => {
-    //   const textWidth = pdf.getTextWidth(line);
-    //   const boxWidth = textWidth + boxPaddingX * 2;
-    //   const boxHeight = fontSize + boxPaddingY * 2;
-    //   const x = leftMargin;
-    //   const y = imageHeight + 100 + index * lineSpacing;
-    //   pdf.setFillColor(0, 0, 0);
-    //   pdf.rect(x, y, boxWidth, boxHeight, 'F');
-    //   pdf.setTextColor(255, 255, 255);
-    //   pdf.text(line, x + boxPaddingX, y + fontSize + boxPaddingY / 2);
-    // });
+    // Footer with Street (Left-aligned)
+    pdf.setFontSize(60);
+    const locationFooter = `${location.street}`;
+    const footerWidth = pdf.getTextWidth(locationFooter);
+    pdf.text(locationFooter, 50,1150);
   }
 
   return pdf;
 };
+
+
 
 
   const previewPdf = async () => {
@@ -378,6 +390,14 @@ function App() {
             placeholder="Enter reporter's name"
             style={{ padding: '8px', marginBottom: '10px', width: '100%' }}
           />
+           <label>Name of Facility:</label>
+          <input
+            type="text"
+            value={facilityName}
+            onChange={(e) => setfacilityName(e.target.value)}
+            placeholder="Enter Name of facility"
+            style={{ padding: '8px', marginBottom: '10px', width: '100%' }}
+          />
         </div>
       </div>
 
@@ -410,7 +430,7 @@ function App() {
           </div>
 
           <button onClick={previewPdf} className="email-btn">Preview PDF</button>
-          <br />
+          <br /><br />
           <button onClick={sendEmail} className="email-btn">Send Email</button>
         </div>
       )}

@@ -488,8 +488,7 @@ const generatePdf = async () => {
           </div>
 
           <button onClick={previewPdf} className="email-btn">Preview PDF</button>
-          <br /><br />
-          <button onClick={sendEmail} className="email-btn">Send Email</button>
+          <button onClick={sendEmail} style={{marginTop:'2px'}} className="email-btn">Send Email</button>
         </div>
       )}
 

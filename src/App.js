@@ -172,7 +172,6 @@ const generatePdf = async () => {
   pdf.setFontSize(60);
   pdf.setFont("helvetica", "normal");
   const titleText = facilityName;
-  const titleWidth = pdf.getTextWidth(titleText);
   pdf.text(titleText, 50, 100);
 
   // Capital Infradienst Image Template
@@ -437,8 +436,8 @@ const generatePdf = async () => {
 
           <label>Description:</label>
           <select value={selectedDescription} onChange={(e) => setSelectedDescription(e.target.value)}>
-            <option value="Clean">Clean</option>
-            <option value="Dirty">Dirty</option>
+            <option value="Clean">Sauber</option>
+            <option value="Dirty">Not sauber</option>
           </select>
 
           <label>Reporter:</label>

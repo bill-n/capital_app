@@ -17,7 +17,7 @@ function App() {
   const [capturedImages, setCapturedImages] = useState([]);
   const [selectedFloor, setSelectedFloor] = useState('1');
   const [selectedType, setSelectedType] = useState('Classroom');
-  const [selectedDescription, setSelectedDescription] = useState('Clean');
+  const [selectedDescription, setSelectedDescription] = useState('Sauber');
   const [reporterName, setReporterName] = useState('');
   const [facilityName, setfacilityName] = useState('');
   const [facingMode, setFacingMode] = useState('environment');
@@ -281,6 +281,7 @@ const generatePdf = async () => {
 
     // Footer line and address
     pdf.setDrawColor(0, 0, 0);
+     pdf.setTextColor(0,0,0);
     pdf.setLineWidth(1);
     pdf.line(30, 1100, 1000, 1100);
 

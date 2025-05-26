@@ -526,7 +526,7 @@ const generatePdf = async () => {
       transition: 'background-color 0.3s ease',
     }}
   >
-    {isSending ? 'Sending Email...' : 'Send Email'}
+    {isSending ? 'Sending..Please Wait' : 'Send Email'}
   </button>
 
   <button

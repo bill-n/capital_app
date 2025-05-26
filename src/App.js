@@ -260,6 +260,7 @@ const generatePdf = async () => {
       `Floor: ${selectedFloor}`,
       `Type: ${selectedType}`,
       `Street: ${location.street}`,
+      `House Number: ${location.houseNumber}`,
       `City: ${location.city}`,
       `Country: ${location.country}`
     ];
@@ -269,7 +270,7 @@ const generatePdf = async () => {
     const topStartY = verticalOffset + 30;
 
     pdf.setFontSize(topRightFontSize);
-    pdf.setTextColor(0, 0, 0);
+    pdf.setTextColor(255,255,255);
 
     topRightLines.forEach((line, idx) => {
       const textWidth = pdf.getTextWidth(line);
@@ -435,6 +436,7 @@ const generatePdf = async () => {
             <div><strong>Lng:</strong> {location.longitude?.toFixed(5)}</div>
             <div><strong>City:</strong> {location.city}</div>
             <div><strong>Street:</strong> {location.street}</div>
+            <div><strong>House Number:</strong> {location.houseNumber}</div>
             <div><strong>Landmark:</strong> {location.landmark}</div>
             <div><strong>Zipcode:</strong> {location.zipcode}</div>
             <div><strong>Time:</strong> {location.timestamp}</div>

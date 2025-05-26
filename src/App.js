@@ -5,11 +5,15 @@ import Webcam from 'react-webcam';
 import { jsPDF } from 'jspdf';
 import { gapi } from 'gapi-script';
 import './App.css';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 
 const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 const SCOPES = process.env.REACT_APP_GOOGLE_SCOPE;
 
+
 function App() {
+  const [isSending, setIsSending] = useState(false);
+
   const [capturedImages, setCapturedImages] = useState([]);
   const [selectedFloor, setSelectedFloor] = useState('1');
   const [selectedType, setSelectedType] = useState('Classroom');
@@ -304,68 +308,87 @@ const generatePdf = async () => {
   };
 
   const sendEmail = async () => {
-    if (capturedImages.length === 0) {
-      toast.warn('No images captured.');
-      return;
-    }
+  if (capturedImages.length === 0) {
+    toast.warn('No images captured.');
+    return;
+  }
+
+  setIsSending(true); // Start sending
+
+  try {
     const pdf = await generatePdf();
     const pdfBlob = pdf.output('blob');
     const reader = new FileReader();
-    reader.readAsDataURL(pdfBlob);
+
     reader.onloadend = () => {
       const base64data = reader.result.split(',')[1];
-      sendGmail(base64data);
+      sendGmail(base64data); // Proceed to send the email
     };
-  };
+
+    reader.readAsDataURL(pdfBlob);
+  } catch (error) {
+    toast.error("Failed to prepare email.");
+    setIsSending(false); // Re-enable button if error
+  }
+};
+
 
   const sendGmail = async (base64data) => {
-    const accessToken = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
-    if (!accessToken) {
-      toast.warn('Not authorized. Please sign in again.');
-      return;
-    }
+  const accessToken = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
+  if (!accessToken) {
+    toast.warn('Not authorized. Please sign in again.');
+    setIsSending(false); // Re-enable button
+    return;
+  }
 
-    const emailContent = [
-      `To: ${process.env.REACT_APP_EMAIL_TO}`,
-      `Cc: ${process.env.REACT_APP_EMAIL_CC}`,
-      'Subject: Captured Image and Details',
-      'MIME-Version: 1.0',
-      'Content-Type: multipart/mixed; boundary=boundary',
-      '',
-      '--boundary',
-      'Content-Type: text/plain; charset=UTF-8',
-      '',
-      `Here is the captured image and details from reporter: ${reporterName}.`,
-      '--boundary',
-      'Content-Type: application/pdf; name=captured-image.pdf',
-      'Content-Transfer-Encoding: base64',
-      'Content-Disposition: attachment; filename=captured-image.pdf',
-      '',
-      base64data,
-      '--boundary--',
-    ].join('\n');
+  const emailContent = [
+    `To: ${process.env.REACT_APP_EMAIL_TO}`,
+    `Cc: ${process.env.REACT_APP_EMAIL_CC}`,
+    'Subject: Captured Image and Details',
+    'MIME-Version: 1.0',
+    'Content-Type: multipart/mixed; boundary=boundary',
+    '',
+    '--boundary',
+    'Content-Type: text/plain; charset=UTF-8',
+    '',
+    `Here is the captured image and details from reporter: ${reporterName}.`,
+    '--boundary',
+    'Content-Type: application/pdf; name=captured-image.pdf',
+    'Content-Transfer-Encoding: base64',
+    'Content-Disposition: attachment; filename=captured-image.pdf',
+    '',
+    base64data,
+    '--boundary--',
+  ].join('\n');
 
-    const base64EncodedEmail = btoa(emailContent)
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
+  const base64EncodedEmail = btoa(emailContent)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 
-    try {
-      const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ raw: base64EncodedEmail }),
-      });
+  try {
+    const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ raw: base64EncodedEmail }),
+    });
 
-      if (!response.ok) throw new Error('Failed to send email');
-      toast.success('Email sent successfully!');
-    } catch (error) {
-      toast.error('Failed to send email');
-    }
-  };
+    if (!response.ok) throw new Error('Failed to send email');
+
+    toast.success('Email sent successfully!');
+
+    setTimeout(() => {
+      window.location.reload(); // Refresh after short delay
+    }, 1000);
+  } catch (error) {
+    toast.error('Failed to send email');
+    setIsSending(false); // Re-enable button on error
+  }
+};
+
 
   return (
     <div className="App">
@@ -436,8 +459,8 @@ const generatePdf = async () => {
 
           <label>Description:</label>
           <select value={selectedDescription} onChange={(e) => setSelectedDescription(e.target.value)}>
-            <option value="Clean">Sauber</option>
-            <option value="Dirty">Not sauber</option>
+            <option value="Sauber">Sauber</option>
+            <option value="Nicht sauber">Not sauber</option>
           </select>
 
           <label>Reporter:</label>
@@ -488,7 +511,14 @@ const generatePdf = async () => {
           </div>
 
           <button onClick={previewPdf} className="email-btn">Preview PDF</button>
-          <button onClick={sendEmail} style={{marginTop:'2px'}} className="email-btn">Send Email</button>
+          <button
+          onClick={sendEmail}
+          disabled={isSending}
+          className={`px-4 py-2 rounded ${isSending ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+        >
+          {isSending ? 'Sending..Please Wait' : 'Send Email'}
+        </button>
+
         </div>
       )}
 
@@ -515,7 +545,7 @@ const generatePdf = async () => {
             >
               X
             </button>
-            <iframe src={pdfPreview} title="PDF Preview" style={{ width: '900px', height: '90vh' }} />
+            <iframe src={pdfPreview} title="PDF Preview" style={{ width: '500px', height: '70vh' }} />
           </div>
         </div>
       )}

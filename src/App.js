@@ -32,7 +32,7 @@ function App() {
     houseNumber: '',
     timestamp: '',
   });
-  const [pdfPreview, setPdfPreview] = useState(null);
+  // const [pdfPreview, setPdfPreview] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const webcamRef = useRef(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -300,13 +300,13 @@ const generatePdf = async () => {
 };
 
 
-  const previewPdf = async () => {
-    const pdf = await generatePdf();
-    const blob = pdf.output('blob');
-    const url = URL.createObjectURL(blob);
-    setPdfPreview(url);
-    setIsModalOpen(true);
-  };
+  // const previewPdf = async () => {
+  //   const pdf = await generatePdf();
+  //   const blob = pdf.output('blob');
+  //   const url = URL.createObjectURL(blob);
+  //   setPdfPreview(url);
+  //   setIsModalOpen(true);
+  // };
 
   const sendEmail = async () => {
   if (capturedImages.length === 0) {
@@ -575,7 +575,7 @@ const generatePdf = async () => {
             >
               X
             </button>
-            <iframe src={pdfPreview} title="PDF Preview" style={{ width: '500px', height: '70vh' }} />
+            {/* <iframe src={pdfPreview} title="PDF Preview" style={{ width: '500px', height: '70vh' }} /> */}
           </div>
         </div>
       )}

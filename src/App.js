@@ -531,7 +531,7 @@ const generatePdf = async () => {
     {isSending ? 'Sending..Please Wait' : 'Send Email'}
   </button>
 
-  <button
+  {/* <button
     onClick={previewPdf}
     style={{
       backgroundColor: '#28a745',
@@ -546,7 +546,7 @@ const generatePdf = async () => {
     }}
   >
     Preview PDF
-  </button>
+  </button> */}
 </div>
 
         </div>

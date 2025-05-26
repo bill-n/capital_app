@@ -510,14 +510,42 @@ const generatePdf = async () => {
             ))}
           </div>
 
-          <button onClick={previewPdf} className="email-btn">Preview PDF</button>
-          <button
-          onClick={sendEmail}
-          disabled={isSending}
-          className={`px-4 py-2 rounded ${isSending ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
-        >
-          {isSending ? 'Sending..Please Wait' : 'Send Email'}
-        </button>
+        <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
+  <button
+    onClick={sendEmail}
+    disabled={isSending}
+    style={{
+      backgroundColor: isSending ? '#ccc' : '#007bff',
+      color: '#fff',
+      padding: '10px 20px',
+      border: 'none',
+      borderRadius: '6px',
+      cursor: isSending ? 'not-allowed' : 'pointer',
+      fontWeight: 'bold',
+      fontSize: '16px',
+      transition: 'background-color 0.3s ease',
+    }}
+  >
+    {isSending ? 'Sending Email...' : 'Send Email'}
+  </button>
+
+  <button
+    onClick={previewPdf}
+    style={{
+      backgroundColor: '#28a745',
+      color: '#fff',
+      padding: '10px 20px',
+      border: 'none',
+      borderRadius: '6px',
+      cursor: 'pointer',
+      fontWeight: 'bold',
+      fontSize: '16px',
+      transition: 'background-color 0.3s ease',
+    }}
+  >
+    Preview PDF
+  </button>
+</div>
 
         </div>
       )}

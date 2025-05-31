@@ -251,33 +251,71 @@ const generatePdf = async () => {
     const descriptionX = imageMarginLeft + imageWidth + margin;
     pdf.text(descLines, descriptionX, descriptionY);
 
-    // Metadata at top right of image (adjust X for margin)
-    const topRightLines = [
-      `Latitude: ${location.latitude}`,
-      `Longitude: ${location.longitude}`,
-      `Zipcode: ${location.zipcode}`,
-      `Date & Time: ${location.timestamp}`,
-      `Floor: ${selectedFloor}`,
-      `Type: ${selectedType}`,
-      `Street: ${location.street}`,
-      `House Number: ${location.houseNumber}`,
-      `City: ${location.city}`,
-      `Country: ${location.country}`
-    ];
+const topRightLines = [
+  `${location.latitude}`,
+  `${location.longitude}`,
+  `${location.timestamp}`,
+  `${selectedFloor} ${selectedType}`,
+  `${location.street}`, 
+  `${location.zipcode} ${location.houseNumber}`,
+  `${location.city} ${location.country}`
+];
 
-    const topRightFontSize = 24;
-    const topRightMargin = 20;
-    const topStartY = verticalOffset + 30;
+const topRightFontSize = 24;
+const topRightMargin = 20;
+const linePadding = 4;
+const topStartY = verticalOffset + 30;
+const shadowOffset = 1;
 
-    pdf.setFontSize(topRightFontSize);
-    pdf.setTextColor(255,255,255);
+pdf.setFontSize(topRightFontSize);
 
-    topRightLines.forEach((line, idx) => {
-      const textWidth = pdf.getTextWidth(line);
-      const x = imageMarginLeft + imageWidth - textWidth - topRightMargin;
-      const y = topStartY + idx * (topRightFontSize + 6);
-      pdf.text(line, x, y);
-    });
+topRightLines.forEach((line, idx) => {
+  const textWidth = pdf.getTextWidth(line);
+  const x = imageMarginLeft + imageWidth - textWidth - topRightMargin;
+  const y = topStartY + idx * (topRightFontSize + 6);
+
+  const rectX = x - linePadding;
+  const rectY = y - topRightFontSize + 4;
+  const rectWidth = textWidth + linePadding * 2;
+  const rectHeight = topRightFontSize + 4;
+
+  // Draw black background
+  pdf.setFillColor(0, 0, 0);
+  pdf.rect(rectX, rectY, rectWidth, rectHeight, 'F');
+
+  // Draw shadow text (slightly offset)
+  pdf.setTextColor(30, 30, 30); // Dark gray shadow
+  pdf.text(line, x + shadowOffset, y + shadowOffset);
+
+  // Draw main white text on top
+  pdf.setTextColor(255, 255, 255); // White text
+  pdf.text(line, x, y);
+});
+
+
+
+
+pdf.setFontSize(topRightFontSize);
+pdf.setTextColor(255, 255, 255); // White text
+
+topRightLines.forEach((line, idx) => {
+  const textWidth = pdf.getTextWidth(line);
+  const x = imageMarginLeft + imageWidth - textWidth - topRightMargin;
+  const y = topStartY + idx * (topRightFontSize + 6);
+
+  const rectX = x - linePadding;
+  const rectY = y - topRightFontSize + 4; // Adjust Y to cover text
+  const rectWidth = textWidth + linePadding * 2;
+  const rectHeight = topRightFontSize + 4;
+
+  // Draw black background
+  pdf.setFillColor(0, 0, 0); // Black
+  pdf.rect(rectX, rectY, rectWidth, rectHeight, 'F');
+
+  // Draw white text
+  pdf.text(line, x, y);
+});
+
 
     // Footer line and address
     pdf.setDrawColor(0, 0, 0);
@@ -448,7 +486,7 @@ const generatePdf = async () => {
               className="capture-btn"
               style={{
                 position: 'absolute',
-                bottom: '10px',
+                bottom: '5px',
                 left: '50%',
                 transform: 'translateX(-50%)'
               }}

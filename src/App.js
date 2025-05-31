@@ -292,9 +292,6 @@ topRightLines.forEach((line, idx) => {
   pdf.text(line, x, y);
 });
 
-
-
-
 pdf.setFontSize(topRightFontSize);
 pdf.setTextColor(255, 255, 255); // White text
 

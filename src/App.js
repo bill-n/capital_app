@@ -441,22 +441,19 @@ const generatePdf = async () => {
             <div><strong>Landmark:</strong> {location.landmark}</div>
             <div><strong>Zipcode:</strong> {location.zipcode}</div>
             <div><strong>Time:</strong> {location.timestamp}</div>
-            
           </div>
-            {/* <button onClick={captureImage} className="capture-btn">Capture Image</button> */}
               <button
-    onClick={captureImage}
-    className="capture-btn"
-    style={{
-      position: 'absolute',
-      bottom: '10px',
-      left: '50%',
-      transform: 'translateX(-50%)'
-    }}
-  >
-    Capture Image
-  </button>
-
+              onClick={captureImage}
+              className="capture-btn"
+              style={{
+                position: 'absolute',
+                bottom: '10px',
+                left: '50%',
+                transform: 'translateX(-50%)'
+              }}
+            >
+              Capture Image
+            </button>
         </div>
         <div className="dropdown-container">
           <label>Floor:</label>

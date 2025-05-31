@@ -423,14 +423,15 @@ const generatePdf = async () => {
           />
           <div style={{
             position: 'absolute',
-            top: '10px',
-            right: '10px',
+            top: '5px',
+            right: '5px',
             backgroundColor: 'rgba(0, 0, 0, 0.6)',
             color: 'white',
-            padding: '10px',
+            padding: '5px',
             borderRadius: '8px',
             fontSize: '10px',
             maxWidth: '400px',
+            textAlign: 'left',
             zIndex: 1,
           }}>
             <div><strong>Lat:</strong> {location.latitude?.toFixed(5)}</div>

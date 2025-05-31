@@ -32,7 +32,7 @@ function App() {
     houseNumber: '',
     timestamp: '',
   });
-  // const [pdfPreview, setPdfPreview] = useState(null);
+  const [pdfPreview, setPdfPreview] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const webcamRef = useRef(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -301,13 +301,13 @@ const generatePdf = async () => {
 };
 
 
-  // const previewPdf = async () => {
-  //   const pdf = await generatePdf();
-  //   const blob = pdf.output('blob');
-  //   const url = URL.createObjectURL(blob);
-  //   setPdfPreview(url);
-  //   setIsModalOpen(true);
-  // };
+  const previewPdf = async () => {
+    const pdf = await generatePdf();
+    const blob = pdf.output('blob');
+    const url = URL.createObjectURL(blob);
+    setPdfPreview(url);
+    setIsModalOpen(true);
+  };
 
   const sendEmail = async () => {
   if (capturedImages.length === 0) {
@@ -429,8 +429,8 @@ const generatePdf = async () => {
             color: 'white',
             padding: '10px',
             borderRadius: '8px',
-            fontSize: '12px',
-            maxWidth: '200px',
+            fontSize: '10px',
+            maxWidth: '400px',
             zIndex: 1,
           }}>
             <div><strong>Lat:</strong> {location.latitude?.toFixed(5)}</div>
@@ -441,9 +441,23 @@ const generatePdf = async () => {
             <div><strong>Landmark:</strong> {location.landmark}</div>
             <div><strong>Zipcode:</strong> {location.zipcode}</div>
             <div><strong>Time:</strong> {location.timestamp}</div>
+            
           </div>
-        </div>
+            {/* <button onClick={captureImage} className="capture-btn">Capture Image</button> */}
+              <button
+    onClick={captureImage}
+    className="capture-btn"
+    style={{
+      position: 'absolute',
+      bottom: '10px',
+      left: '50%',
+      transform: 'translateX(-50%)'
+    }}
+  >
+    Capture Image
+  </button>
 
+        </div>
         <div className="dropdown-container">
           <label>Floor:</label>
           <select value={selectedFloor} onChange={(e) => setSelectedFloor(e.target.value)}>
@@ -487,7 +501,7 @@ const generatePdf = async () => {
 
       <ToastContainer position="bottom-right" autoClose={3000} />
 
-      <button onClick={captureImage} className="capture-btn">Capture Image</button>
+      
 
       {capturedImages.length > 0 && (
         <div className="captured-image-container">
@@ -532,7 +546,7 @@ const generatePdf = async () => {
     {isSending ? 'Sending..Please Wait' : 'Send Email'}
   </button>
 
-  {/* <button
+  { <button
     onClick={previewPdf}
     style={{
       backgroundColor: '#28a745',
@@ -547,7 +561,7 @@ const generatePdf = async () => {
     }}
   >
     Preview PDF
-  </button> */}
+  </button> }
 </div>
 
         </div>
@@ -576,7 +590,7 @@ const generatePdf = async () => {
             >
               X
             </button>
-            {/* <iframe src={pdfPreview} title="PDF Preview" style={{ width: '500px', height: '70vh' }} /> */}
+            {<iframe src={pdfPreview} title="PDF Preview" style={{ width: '500px', height: '70vh' }} /> }
           </div>
         </div>
       )}

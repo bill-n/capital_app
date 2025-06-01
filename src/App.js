@@ -399,7 +399,7 @@ const sendEmail = async () => {
           <label>Description:</label>
           <select value={selectedDescription} onChange={(e) => setSelectedDescription(e.target.value)}>
             <option value="Sauber">Sauber</option>
-            <option value="Nicht sauber">Not sauber</option>
+            <option value="Nicht sauber">Nicht sauber</option>
           </select>
 
           <label>Reporter:</label>

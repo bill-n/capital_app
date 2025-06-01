@@ -123,14 +123,22 @@ function App() {
   }, []);
 
   const captureImage = () => {
- 
-    const imageSrc = webcamRef.current?.getScreenshot();
-    if (imageSrc) {
-      setCapturedImages((prev) => [...prev, imageSrc]);
-    } else {
-      toast.error('Failed to capture image.');
-    }
-  };
+  const imageSrc = webcamRef.current?.getScreenshot();
+  if (imageSrc) {
+    const imageData = {
+      imageSrc,
+      type: selectedType,
+      description: selectedDescription,
+      reporter: reporterName,
+      facility: facilityName,
+      floor: selectedFloor,
+    };
+    setCapturedImages((prev) => [...prev, imageData]);
+  } else {
+    toast.error('Failed to capture image.');
+  }
+};
+
 
   const removeImage = (index) => {
     setCapturedImages((prev) => prev.filter((_, i) => i !== index));
@@ -173,92 +181,58 @@ const getBase64ImageFromURL = (url) => {
 
 const generatePdf = async () => {
   const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [1920, 1180] });
-  const totalPages = capturedImages.length + 1; // 1 for the cover page
+  const totalPages = capturedImages.length + 1;
 
-  // First Page: Capital Image Template + Logo + Reporter Footer
   const capital_image_template = await getBase64ImageFromURL('capital_image_template.png');
   const capital_image_logo = await getBase64ImageFromURL('capital_image_logo.png');
 
-  // Header - Facility Name
+  // Cover Page
   pdf.setFontSize(60);
-  pdf.setFont("helvetica", "normal");
-  const titleText = facilityName;
-  pdf.text(titleText, 50, 100);
-
-  // Capital Infradienst Image Template
+  pdf.text(facilityName, 50, 100);
   const logoWidth = 1200;
   const logoHeight = 900;
   const logoX = (1920 - logoWidth) / 2;
   const logoY = 150;
   pdf.addImage(capital_image_template, 'PNG', logoX, logoY, logoWidth, logoHeight);
-
-  // Footer - Reporter Name
   pdf.setFontSize(36);
-  pdf.setFont("helvetica", "normal");
-  const reporter = `${reporterName}`;
-  pdf.text(reporter, 150, 1150);
-
-  // Page number for the first page (cover)
-  pdf.setFontSize(24);
-  pdf.setTextColor(100, 100, 100);
+  pdf.text(`Reporter: ${reporterName}`, 150, 1150);
   const firstPageNumber = `Page 1 of ${totalPages}`;
   const firstPageNumberWidth = pdf.getTextWidth(firstPageNumber);
-  pdf.text(firstPageNumber, 1920 - firstPageNumberWidth - 50, 1150); // bottom-right
+  pdf.setFontSize(24);
+  pdf.text(firstPageNumber, 1920 - firstPageNumberWidth - 50, 1150);
 
-  // Captured Images Pages
+  // For each captured image
   for (let i = 0; i < capturedImages.length; i++) {
+    const item = capturedImages[i];
     pdf.addPage();
 
-    // HEADER for pages after the first
+    // Header
     const headerLogoWidth = 60;
     const headerLogoHeight = 60;
     const headerLogoX = 50;
     const headerLogoY = 40;
-
-    const headerTextX = headerLogoX + headerLogoWidth + 20;
-    const headerTextY = headerLogoY + headerLogoHeight / 2 + 10;
-
-    // Draw logo
     pdf.addImage(capital_image_logo, 'PNG', headerLogoX, headerLogoY, headerLogoWidth, headerLogoHeight);
-
-    // Facility name as header
     pdf.setFontSize(36);
-    pdf.setFont("helvetica", "normal");
-    pdf.setTextColor(0, 0, 0);
-    pdf.text(facilityName, headerTextX, headerTextY);
+    pdf.text(item.facility, headerLogoX + headerLogoWidth + 20, headerLogoY + headerLogoHeight / 2 + 10);
 
     // Underline
     const underlineY = headerLogoY + headerLogoHeight + 10;
     pdf.setDrawColor(0, 0, 0);
-    pdf.setLineWidth(1); // thin
+    pdf.setLineWidth(1);
     pdf.line(40, underlineY, 1880, underlineY);
 
-    // ====== BODY CONTENT BELOW HEADER ======
-    const verticalOffset = underlineY + 20; // enough space below underline
+    const verticalOffset = underlineY + 20;
 
-    const brightImage = await adjustImageBrightness(capturedImages[i], 1.6);
+    // Image
+    const brightImage = await adjustImageBrightness(item.imageSrc, 1.6);
     const imageWidth = 900;
     const imageHeight = 900;
-    const margin = 150;
-    const imageMarginLeft = 320; // <-- Increased left margin here
-
-    // Image on the left with increased margin
+    const imageMarginLeft = 320;
     pdf.addImage(brightImage, 'JPEG', imageMarginLeft, verticalOffset, imageWidth, imageHeight);
 
-    // Description next to the image (adjust X to new margin)
-    const descriptionText = selectedDescription || "No description provided";
-    pdf.setFontSize(36);
-    pdf.setFont("helvetica", "normal");
-    pdf.setTextColor(50, 50, 50);
-
-    const descLines = pdf.splitTextToSize(descriptionText, 850);
-    const lineHeight = 36 * 1.2;
-    const descHeight = descLines.length * lineHeight;
-    const descriptionY = verticalOffset + (imageHeight / 2) - (descHeight / 2);
-    const descriptionX = imageMarginLeft + imageWidth + margin;
-    pdf.text(descLines, descriptionX, descriptionY);
-
-const topRightLines = [
+    // Metadata box OVER the image (top-right inside the image area)
+    // Metadata box OVER the image (top-right inside the image area)
+const metadataLines = [
   `${location.latitude}`,
   `${location.longitude}`,
   `${location.timestamp}`,
@@ -267,81 +241,46 @@ const topRightLines = [
   `${location.zipcode} ${location.houseNumber}`,
   `${location.city} ${location.country}`
 ];
+pdf.setFontSize(20);
+const metaBoxWidth = 300;
+const metaBoxHeight = metadataLines.length * 25 + 20;
+const metaBoxX = imageMarginLeft + imageWidth - metaBoxWidth - 20; // inside image, right padding
+const metaBoxY = verticalOffset + 20; // top padding
 
-const topRightFontSize = 24;
-const topRightMargin = 20;
-const linePadding = 4;
-const topStartY = verticalOffset + 30;
-const shadowOffset = 1;
+// Draw semi-transparent black rounded box
+pdf.setFillColor(0, 0, 0, 0.6); // black with opacity
+pdf.setDrawColor(150, 150, 150); // optional border (gray)
+const cornerRadius = 15;
+pdf.roundedRect(metaBoxX, metaBoxY, metaBoxWidth, metaBoxHeight, cornerRadius, cornerRadius, 'F');
 
-pdf.setFontSize(topRightFontSize);
-
-topRightLines.forEach((line, idx) => {
-  const textWidth = pdf.getTextWidth(line);
-  const x = imageMarginLeft + imageWidth - textWidth - topRightMargin;
-  const y = topStartY + idx * (topRightFontSize + 6);
-
-  const rectX = x - linePadding;
-  const rectY = y - topRightFontSize + 4;
-  const rectWidth = textWidth + linePadding * 2;
-  const rectHeight = topRightFontSize + 4;
-
-  // Draw black background
-  pdf.setFillColor(0, 0, 0);
-  pdf.rect(rectX, rectY, rectWidth, rectHeight, 'F');
-
-  // Draw shadow text (slightly offset)
-  pdf.setTextColor(30, 30, 30); // Dark gray shadow
-  pdf.text(line, x + shadowOffset, y + shadowOffset);
-
-  // Draw main white text on top
-  pdf.setTextColor(255, 255, 255); // White text
-  pdf.text(line, x, y);
-});
-
-pdf.setFontSize(topRightFontSize);
-pdf.setTextColor(255, 255, 255); // White text
-
-topRightLines.forEach((line, idx) => {
-  const textWidth = pdf.getTextWidth(line);
-  const x = imageMarginLeft + imageWidth - textWidth - topRightMargin;
-  const y = topStartY + idx * (topRightFontSize + 6);
-
-  const rectX = x - linePadding;
-  const rectY = y - topRightFontSize + 4; // Adjust Y to cover text
-  const rectWidth = textWidth + linePadding * 2;
-  const rectHeight = topRightFontSize + 4;
-
-  // Draw black background
-  pdf.setFillColor(0, 0, 0); // Black
-  pdf.rect(rectX, rectY, rectWidth, rectHeight, 'F');
-
-  // Draw white text
-  pdf.text(line, x, y);
+// Add white text over the black box
+let textY = metaBoxY + 25;
+pdf.setTextColor(255, 255, 255);
+metadataLines.forEach(line => {
+  pdf.text(line, metaBoxX + 15, textY);
+  textY += 25;
 });
 
 
-    // Footer line and address
+    // Footer
     pdf.setDrawColor(0, 0, 0);
-     pdf.setTextColor(0,0,0);
-    pdf.setLineWidth(1);
     pdf.line(30, 1100, 1000, 1100);
-
     pdf.setFontSize(24);
-    const locationFooter = `${location.street + ',' || ''} ${location.houseNumber || ''} ${location.zipcode || ''} ${location.city || ''}`.trim();
+    pdf.setTextColor(0, 0, 0);
+    const locationFooter = `${location.street || ''} ${location.houseNumber || ''} ${location.zipcode || ''} ${location.city || ''}`.trim();
     pdf.text(locationFooter, 50, 1150);
 
     // Page number
-    const pageNum = i + 2; // page 1 is the cover
+    const pageNum = i + 2;
     const pageText = `Page ${pageNum} of ${totalPages}`;
     const pageTextWidth = pdf.getTextWidth(pageText);
     pdf.setFontSize(24);
     pdf.setTextColor(100, 100, 100);
     pdf.text(pageText, 1920 - pageTextWidth - 50, 1150);
   }
+
   return pdf;
 };
-
 
   const previewPdf = async () => {
     const pdf = await generatePdf();
@@ -484,33 +423,70 @@ const sendEmail = async () => {
 
       <ToastContainer position="bottom-right" autoClose={3000} />
 
-      
+{capturedImages.length > 0 && (
+  <div className="captured-image-container">
+    <div className="captured-image" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+      {capturedImages.map((item, idx) => (
+        <div
+          key={idx}
+          style={{
+            position: 'relative',
+            width: '180px',
+            border: '1px solid #ccc',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            background: '#fff',
+            padding: '5px',
+            textAlign:'left'
+          }}
+        >
+          <img
+            src={item.imageSrc}
+            alt={`Captured ${idx}`}
+            style={{
+              width: '100%',
+              height: 'auto',
+              borderRadius: '4px',
+              display: 'block',
+            }}
+          />
 
-      {capturedImages.length > 0 && (
-        <div className="captured-image-container">
-          <div className="captured-image" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-            {capturedImages.map((img, idx) => (
-              <div key={idx} style={{ position: 'relative' }}>
-                <img src={img} alt={`Captured ${idx}`} style={{ maxWidth: '150px' }} />
-                <button
-                  onClick={() => removeImage(idx)}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    right: 0,
-                    background: 'red',
-                    color: 'white',
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
+          {/* ✕ Remove button overlay */}
+          <button
+            onClick={() => removeImage(idx)}
+            style={{
+              position: 'absolute',
+              top: '5px',
+              right: '5px',
+              background: 'red',
+              color: 'white',
+              border: 'none',
+              borderRadius: '50%',
+              width: '24px',
+              height: '24px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              lineHeight: '24px',
+              textAlign: 'center',
+            }}
+            title="Remove image"
+          >
+            ✕
+          </button>
+
+          {/* Metadata block */}
+          <div style={{ fontSize: '12px', marginTop: '6px' }}>
+            <p><strong>Type:</strong> {item.type}</p>
+            <p><strong>Description:</strong> {item.description}</p>
+            <p><strong>Reporter:</strong> {item.reporter}</p>
+            <p><strong>Facility:</strong> {item.facility}</p>
+            <p><strong>Floor:</strong> {item.floor}</p>
           </div>
+        </div>
+      ))}
+    </div>
 
-        <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
+  <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
   <button
     onClick={sendEmail}
     disabled={isSending}

@@ -424,122 +424,141 @@ const sendEmail = async () => {
       <ToastContainer position="bottom-right" autoClose={3000} />
 
 {capturedImages.length > 0 && (
-  <div className="captured-image-container">
-    <div className="captured-image" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-      {capturedImages.map((item, idx) => (
-        <div
-          key={idx}
+  <div className="captured-image-container" style={{ width: '100%' }}>
+  <div
+    className="captured-image"
+    style={{
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '10px',
+      justifyContent: 'center',
+      textAlign:'left'
+    }}
+  >
+    {capturedImages.map((item, idx) => (
+      <div
+        key={idx}
+        style={{
+          position: 'relative',
+          width: '150px',
+          border: '1px solid #ccc',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          background: '#fff',
+          padding: '5px',
+          flex: '1 1 150px', // allow flexible shrink/grow
+          maxWidth: '200px',
+        }}
+      >
+        <img
+          src={item.imageSrc}
+          alt={`Captured ${idx}`}
           style={{
-            position: 'relative',
-            width: '180px',
-            border: '1px solid #ccc',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            background: '#fff',
-            padding: '5px',
-            textAlign:'left'
+            width: '100%',
+            height: 'auto',
+            borderRadius: '4px',
+            display: 'block',
           }}
+        />
+
+        {/* ✕ Remove button */}
+        <button
+          onClick={() => removeImage(idx)}
+          style={{
+            position: 'absolute',
+            top: '5px',
+            right: '5px',
+            background: 'red',
+            color: 'white',
+            border: 'none',
+            borderRadius: '50%',
+            width: '24px',
+            height: '24px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            lineHeight: '24px',
+            textAlign: 'center',
+          }}
+          title="Remove image"
         >
-          <img
-            src={item.imageSrc}
-            alt={`Captured ${idx}`}
-            style={{
-              width: '100%',
-              height: 'auto',
-              borderRadius: '4px',
-              display: 'block',
-            }}
-          />
+          ✕
+        </button>
 
-          {/* ✕ Remove button overlay */}
-          <button
-            onClick={() => removeImage(idx)}
-            style={{
-              position: 'absolute',
-              top: '5px',
-              right: '5px',
-              background: 'red',
-              color: 'white',
-              border: 'none',
-              borderRadius: '50%',
-              width: '24px',
-              height: '24px',
-              cursor: 'pointer',
-              fontSize: '16px',
-              lineHeight: '24px',
-              textAlign: 'center',
-            }}
-            title="Remove image"
-          >
-            ✕
-          </button>
-
-          {/* Metadata block */}
-          <div style={{ fontSize: '12px', marginTop: '6px' }}>
-            <p><strong>Type:</strong> {item.type}</p>
-            <p><strong>Description:</strong> {item.description}</p>
-            <p><strong>Reporter:</strong> {item.reporter}</p>
-            <p><strong>Facility:</strong> {item.facility}</p>
-            <p><strong>Floor:</strong> {item.floor}</p>
-          </div>
+        <div style={{ fontSize: '12px', marginTop: '6px', wordWrap: 'break-word' }}>
+          <p><strong>Type:</strong> {item.type}</p>
+          <p><strong>Description:</strong> {item.description}</p>
+          <p><strong>Reporter:</strong> {item.reporter}</p>
+          <p><strong>Facility:</strong> {item.facility}</p>
+          <p><strong>Floor:</strong> {item.floor}</p>
         </div>
-      ))}
-    </div>
+      </div>
+    ))}
+  </div>
 
-  <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
-  <button
-    onClick={sendEmail}
-    disabled={isSending}
+  {/* Buttons section */}
+  <div
     style={{
-      backgroundColor: isSending ? '#ccc' : '#007bff',
-      color: '#fff',
-      padding: '10px 20px',
-      border: 'none',
-      borderRadius: '6px',
-      cursor: isSending ? 'not-allowed' : 'pointer',
-      fontWeight: 'bold',
-      fontSize: '16px',
-      transition: 'background-color 0.3s ease',
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '12px',
+      marginTop: '20px',
+      justifyContent: 'center',
     }}
   >
-    {isSending ? 'Sending..Please Wait' : 'Send Email'}
-  </button>
-  <button
-  onClick={downloadImagesAsZip}
-  style={{
-    backgroundColor: '#6c63ff',
-    color: '#fff',
-    padding: '10px 20px',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    fontSize: '16px',
-    transition: 'background-color 0.3s ease',
-  }}
->
-  Save Images (ZIP)
-</button>
+    <button
+      onClick={downloadImagesAsZip}
+      style={{
+        backgroundColor: '#6c63ff',
+        color: '#fff',
+        padding: '10px 20px',
+        border: 'none',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+        fontSize: '16px',
+        flex: '1 1 150px',
+      }}
+    >
+      Save Images (ZIP)
+    </button>
 
-  { <button
-    onClick={previewPdf}
-    style={{
-      backgroundColor: '#28a745',
-      color: '#fff',
-      padding: '10px 20px',
-      border: 'none',
-      borderRadius: '6px',
-      cursor: 'pointer',
-      fontWeight: 'bold',
-      fontSize: '16px',
-      transition: 'background-color 0.3s ease',
-    }}
-  >
-    Preview PDF
-  </button> }
+    <button
+      onClick={previewPdf}
+      style={{
+        backgroundColor: '#28a745',
+        color: '#fff',
+        padding: '10px 20px',
+        border: 'none',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+        fontSize: '16px',
+        flex: '1 1 150px',
+      }}
+    >
+      Preview PDF
+    </button>
+
+        <button
+      onClick={sendEmail}
+      disabled={isSending}
+      style={{
+        backgroundColor: isSending ? '#ccc' : '#007bff',
+        color: '#fff',
+        padding: '10px 20px',
+        border: 'none',
+        borderRadius: '6px',
+        cursor: isSending ? 'not-allowed' : 'pointer',
+        fontWeight: 'bold',
+        fontSize: '16px',
+        flex: '1 1 150px', // flexible on small screens
+      }}
+    >
+      {isSending ? 'Sending..Please Wait' : 'Send Email'}
+    </button>
+  </div>
 </div>
 
-        </div>
       )}
 
       {isModalOpen && (

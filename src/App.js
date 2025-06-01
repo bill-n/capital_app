@@ -6,6 +6,8 @@ import { jsPDF } from 'jspdf';
 import { gapi } from 'gapi-script';
 import './App.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 const SCOPES = process.env.REACT_APP_GOOGLE_SCOPE;
@@ -13,7 +15,6 @@ const SCOPES = process.env.REACT_APP_GOOGLE_SCOPE;
 
 function App() {
   const [isSending, setIsSending] = useState(false);
-
   const [capturedImages, setCapturedImages] = useState([]);
   const [selectedFloor, setSelectedFloor] = useState('1');
   const [selectedType, setSelectedType] = useState('Classroom');
@@ -35,9 +36,31 @@ function App() {
   const [pdfPreview, setPdfPreview] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const webcamRef = useRef(null);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [googleAuthReady, setGoogleAuthReady] = useState(false);
   const authInstanceRef = useRef(null);
+
+  const downloadImagesAsZip = async () => {
+  if (capturedImages.length === 0) {
+    toast.warn('No images to download.');
+    return;
+  }
+
+  const zip = new JSZip();
+
+  for (let i = 0; i < capturedImages.length; i++) {
+    try {
+      const imageDataUrl = capturedImages[i];
+      const response = await fetch(imageDataUrl);
+      const blob = await response.blob();
+      zip.file(`image_${i + 1}.jpeg`, blob);
+    } catch (error) {
+      console.error(`Error fetching image ${i + 1}`, error);
+    }
+  }
+
+  const zipBlob = await zip.generateAsync({ type: "blob" });
+  saveAs(zipBlob, "captured_images.zip");
+};
+
 
   useEffect(() => {
     function start() {
@@ -46,9 +69,6 @@ function App() {
         .then(() => {
           const authInstance = gapi.auth2.getAuthInstance();
           authInstanceRef.current = authInstance;
-          setIsAuthorized(authInstance.isSignedIn.get());
-          authInstance.isSignedIn.listen(setIsAuthorized);
-          setGoogleAuthReady(true);
         })
         .catch((error) => {
           toast.error('Error loading GAPI');
@@ -102,21 +122,8 @@ function App() {
     }
   }, []);
 
-  const signIn = () => {
-    if (authInstanceRef.current) {
-      authInstanceRef.current.signIn({ prompt: 'consent' }).then(() => {
-        setIsAuthorized(true);
-      });
-    } else {
-      toast.warn('Google Auth not initialized yet.');
-    }
-  };
-
   const captureImage = () => {
-    // if (!reporterName.trim()) {
-    //   toast.warn('Please enter reporter name.');
-    //   return;
-    // }
+ 
     const imageSrc = webcamRef.current?.getScreenshot();
     if (imageSrc) {
       setCapturedImages((prev) => [...prev, imageSrc]);
@@ -344,88 +351,38 @@ topRightLines.forEach((line, idx) => {
     setIsModalOpen(true);
   };
 
-  const sendEmail = async () => {
+const sendEmail = async () => {
   if (capturedImages.length === 0) {
     toast.warn('No images captured.');
     return;
   }
 
-  setIsSending(true); // Start sending
+  setIsSending(true);
 
   try {
     const pdf = await generatePdf();
     const pdfBlob = pdf.output('blob');
-    const reader = new FileReader();
 
-    reader.onloadend = () => {
-      const base64data = reader.result.split(',')[1];
-      sendGmail(base64data); // Proceed to send the email
-    };
+    const formData = new FormData();
+    formData.append('reporterName', reporterName);
+    formData.append('facilityName', facilityName);
+    formData.append('pdf', pdfBlob, 'report.pdf');
 
-    reader.readAsDataURL(pdfBlob);
-  } catch (error) {
-    toast.error("Failed to prepare email.");
-    setIsSending(false); // Re-enable button if error
-  }
-};
-
-
-  const sendGmail = async (base64data) => {
-  const accessToken = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
-  if (!accessToken) {
-    toast.warn('Not authorized. Please sign in again.');
-    setIsSending(false); // Re-enable button
-    return;
-  }
-
-  const emailContent = [
-    `To: ${process.env.REACT_APP_EMAIL_TO}`,
-    `Cc: ${process.env.REACT_APP_EMAIL_CC}`,
-    'Subject: Captured Image and Details',
-    'MIME-Version: 1.0',
-    'Content-Type: multipart/mixed; boundary=boundary',
-    '',
-    '--boundary',
-    'Content-Type: text/plain; charset=UTF-8',
-    '',
-    `Here is the captured image and details from reporter: ${reporterName}.`,
-    '--boundary',
-    'Content-Type: application/pdf; name=captured-image.pdf',
-    'Content-Transfer-Encoding: base64',
-    'Content-Disposition: attachment; filename=captured-image.pdf',
-    '',
-    base64data,
-    '--boundary--',
-  ].join('\n');
-
-  const base64EncodedEmail = btoa(emailContent)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-
-  try {
-    const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    const response = await fetch('http://localhost:3000/send-email', {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ raw: base64EncodedEmail }),
+      body: formData,
     });
 
     if (!response.ok) throw new Error('Failed to send email');
 
     toast.success('Email sent successfully!');
-
-    setTimeout(() => {
-      window.location.reload(); // Refresh after short delay
-    }, 1000);
+    setTimeout(() => window.location.reload(), 1000);
   } catch (error) {
-    toast.error('Failed to send email');
-    setIsSending(false); // Re-enable button on error
+    console.error(error);
+    toast.error('Failed to send email.');
+    setIsSending(false);
   }
 };
-
 
   return (
     <div className="App">
@@ -434,13 +391,6 @@ topRightLines.forEach((line, idx) => {
         <span style={{ color: 'black' }}>CAPITAL </span>{' '}
         <span style={{ color: '#c4aa6a' }}>INFRADIENST</span>
       </h1>
-
-      {!isAuthorized && (
-        <button onClick={signIn} className="google-signin-btn" disabled={!googleAuthReady}>
-          {googleAuthReady ? 'Sign in with Google' : 'Initializing...'}
-        </button>
-      )}
-
       <div className="camera-selector">
         <select value={facingMode} onChange={(e) => setFacingMode(e.target.value)} className="styled-select">
           <option value="user">Front Camera</option>
@@ -578,6 +528,22 @@ topRightLines.forEach((line, idx) => {
   >
     {isSending ? 'Sending..Please Wait' : 'Send Email'}
   </button>
+  <button
+  onClick={downloadImagesAsZip}
+  style={{
+    backgroundColor: '#6c63ff',
+    color: '#fff',
+    padding: '10px 20px',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: '16px',
+    transition: 'background-color 0.3s ease',
+  }}
+>
+  Save Images (ZIP)
+</button>
 
   { <button
     onClick={previewPdf}

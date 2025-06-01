@@ -248,7 +248,7 @@ const metaBoxX = imageMarginLeft + imageWidth - metaBoxWidth - 20; // inside ima
 const metaBoxY = verticalOffset + 20; // top padding
 
 // Draw semi-transparent black rounded box
-pdf.setFillColor(0, 0, 0, 0.6); // black with opacity
+pdf.setFillColor(0, 0, 0); // black with opacity
 pdf.setDrawColor(150, 150, 150); // optional border (gray)
 const cornerRadius = 15;
 pdf.roundedRect(metaBoxX, metaBoxY, metaBoxWidth, metaBoxHeight, cornerRadius, cornerRadius, 'F');

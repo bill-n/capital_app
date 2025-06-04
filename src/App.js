@@ -8,6 +8,9 @@ import './App.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import { Worker, Viewer } from '@react-pdf-viewer/core';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
 const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 const SCOPES = process.env.REACT_APP_GOOGLE_SCOPE;
@@ -577,7 +580,7 @@ const sendEmail = async () => {
 
       )}
 
-      {isModalOpen && (
+      {/* {isModalOpen && (
         <div style={{
           position: 'fixed', top: 0, left: 0,
           width: '100%', height: '100%',
@@ -600,11 +603,78 @@ const sendEmail = async () => {
             >
               X
             </button>
-            {<iframe src={pdfPreview} title="PDF Preview" style={{ width: '500px', height: '70vh' }} /> }
+            <div style={{ height: '60vh',width:'60vh' }}>
+              <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
+                <Viewer fileUrl={pdfPreview} />
+              </Worker>
+            </div>
           </div>
         </div>
-      )}
-    </div>
+      )} */}
+      {isModalOpen && (
+  <div
+    className="modal-backdrop"
+    onClick={() => setIsModalOpen(false)} // close on outside click
+    style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(0,0,0,0.7)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1000,
+    }}
+  >
+    <div
+      className="modal-content"
+      onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
+      style={{
+        position: 'relative',
+        backgroundColor: '#fff',
+        borderRadius: '8px',
+        padding: '20px',
+        maxWidth: '90%',
+        maxHeight: '90%',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* Close Button */}
+      <button
+        onClick={() => setIsModalOpen(false)}
+        style={{
+          position: 'absolute',
+          top: '10px',
+          right: '10px',
+          background: 'red',
+          color: 'white',
+          border: 'none',
+          borderRadius: '50%',
+          width: '32px',
+          height: '32px',
+          fontSize: '16px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+        }}
+        aria-label="Close PDF Preview"
+      >
+        X
+      </button>
+
+              {/* PDF Viewer */}
+              <div style={{ height: '60vh', width: '60vh', marginTop: '40px' }}>
+                <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
+                  <Viewer fileUrl={pdfPreview} />
+                </Worker>
+              </div>
+            </div>
+          </div>
+        )}
+  </div>
   );
 }
 

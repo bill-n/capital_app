@@ -230,9 +230,25 @@ const generatePdf = async () => {
     const imageMarginLeft = 320;
     pdf.addImage(brightImage, 'JPEG', imageMarginLeft, verticalOffset, imageWidth, imageHeight);
 
+    // Description next to the image
+    const descriptionText = item.description || "No description provided";
+    pdf.setFontSize(30);
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(50, 50, 50);
+
+    // Choose position: to the right of the image or below it
+    const descX = imageMarginLeft + imageWidth + 30;  // right side of image
+    const descY = verticalOffset + 350;  // top alignment with image
+
+    // OR position it below the image like this:
+    // const descX = imageMarginLeft;
+    // const descY = verticalOffset + imageHeight + 40;
+
+    pdf.text(`${descriptionText}`, descX, descY);
+
     // Metadata box OVER the image (top-right inside the image area)
     // Metadata box OVER the image (top-right inside the image area)
-const metadataLines = [
+  const metadataLines = [
   `${location.latitude}`,
   `${location.longitude}`,
   `${location.timestamp}`,

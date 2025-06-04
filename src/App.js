@@ -195,7 +195,7 @@ const generatePdf = async () => {
   const logoY = 150;
   pdf.addImage(capital_image_template, 'PNG', logoX, logoY, logoWidth, logoHeight);
   pdf.setFontSize(36);
-  pdf.text(`Reporter: ${reporterName}`, 150, 1150);
+  pdf.text(`${reporterName}`, 150, 1150);
   const firstPageNumber = `Page 1 of ${totalPages}`;
   const firstPageNumberWidth = pdf.getTextWidth(firstPageNumber);
   pdf.setFontSize(24);

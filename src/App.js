@@ -538,7 +538,7 @@ const sendEmail = async () => {
         flex: '1 1 150px',
       }}
     >
-      Save Images (ZIP)
+      Save Image(s)
     </button>
 
     <button

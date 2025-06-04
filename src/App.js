@@ -580,37 +580,6 @@ const sendEmail = async () => {
 
       )}
 
-      {/* {isModalOpen && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0,
-          width: '100%', height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.7)',
-          display: 'flex', justifyContent: 'center', alignItems: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: '#fff', padding: '10px', borderRadius: '8px',
-            maxWidth: '90%', maxHeight: '90%', overflow: 'auto',
-            position: 'relative'
-          }}>
-            <button
-              onClick={() => setIsModalOpen(false)}
-              style={{
-                position: 'absolute', top: 20, right: 20,
-                background: 'red', color: 'white', border: 'none',
-                fontSize: '20px', cursor: 'pointer'
-              }}
-            >
-              X
-            </button>
-            <div style={{ height: '60vh',width:'60vh' }}>
-              <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
-                <Viewer fileUrl={pdfPreview} />
-              </Worker>
-            </div>
-          </div>
-        </div>
-      )} */}
       {isModalOpen && (
   <div
     className="modal-backdrop"
@@ -636,8 +605,8 @@ const sendEmail = async () => {
         backgroundColor: '#fff',
         borderRadius: '8px',
         padding: '20px',
-        maxWidth: '90%',
-        maxHeight: '90%',
+        maxWidth: '70%',
+        maxHeight: '70%',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
@@ -666,7 +635,7 @@ const sendEmail = async () => {
       </button>
 
               {/* PDF Viewer */}
-              <div style={{ height: '60vh', width: '60vh', marginTop: '40px' }}>
+              <div style={{ height: '60vh', width: '50vh', marginTop: '40px' }}>
                 <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
                   <Viewer fileUrl={pdfPreview} />
                 </Worker>

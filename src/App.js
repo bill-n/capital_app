@@ -61,7 +61,30 @@ function App() {
   }
 
   const zipBlob = await zip.generateAsync({ type: "blob" });
-  saveAs(zipBlob, "captured_images.zip");
+  const now = new Date();
+
+// Format datetime: YYYY-MM-DD_HH-MM
+const datetime = now
+  .toLocaleString('sv-SE', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+  .replace(' ', '_')
+  .replace(/:/g, '-');
+
+// reporter and facility names
+const clean = (str) =>
+  (str || '').trim().replace(/\s+/g, '').replace(/[^a-zA-Z0-9_-]/g, '');
+
+const reporter = clean(reporterName);
+const facility = clean(facilityName);
+
+// Compose final filename
+const filename = `${reporter}_${facility}_${datetime}.zip`;
+saveAs(zipBlob, filename);
 };
 
 

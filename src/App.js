@@ -60,10 +60,7 @@ function App() {
     }
   }
 
-  const zipBlob = await zip.generateAsync({ type: "blob" });
-  const now = new Date();
-
-// Format datetime: YYYY-MM-DD_HH-MM
+const now = new Date();
 const datetime = now
   .toLocaleString('sv-SE', {
     year: 'numeric',
@@ -75,18 +72,28 @@ const datetime = now
   .replace(' ', '_')
   .replace(/:/g, '-');
 
-// reporter and facility names
 const clean = (str) =>
   (str || '').trim().replace(/\s+/g, '').replace(/[^a-zA-Z0-9_-]/g, '');
 
 const reporter = clean(reporterName);
 const facility = clean(facilityName);
 
-// Compose final filename
+// ✅ Define filename BEFORE loop
 const filename = `${reporter}_${facility}_${datetime}.zip`;
-saveAs(zipBlob, filename);
-};
 
+// Loop over images and add to ZIP using filename
+for (let i = 0; i < capturedImages.length; i++) {
+  const imageDataUrl = capturedImages[i].imageSrc;
+  const response = await fetch(imageDataUrl);
+  const blob = await response.blob();
+
+  zip.file(`${filename.replace('.zip', '')}_${i + 1}.jpeg`, blob); // name image same as zip
+}
+
+const zipBlob = await zip.generateAsync({ type: "blob" });
+saveAs(zipBlob, filename);
+
+};
 
   useEffect(() => {
     function start() {

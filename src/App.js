@@ -215,7 +215,6 @@ const getBase64ImageFromURL = (url) => {
 const generatePdf = async () => {
   const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [1920, 1180] });
   const totalPages = capturedImages.length + 1;
-
   const capital_image_template = await getBase64ImageFromURL('capital_image_template.png');
   const capital_image_logo = await getBase64ImageFromURL('capital_image_logo.png');
 
@@ -226,7 +225,7 @@ const generatePdf = async () => {
   const logoHeight = 900;
   const logoX = (1920 - logoWidth) / 2;
   const logoY = 150;
-  pdf.addImage(capital_image_template, 'PNG', logoX, logoY, logoWidth, logoHeight);
+  pdf.addImage(capital_image_template, 'JPEG', logoX, logoY, logoWidth, logoHeight,'','FAST');
   pdf.setFontSize(36);
   pdf.text(`${reporterName}`, 150, 1150);
   const firstPageNumber = `Page 1 of ${totalPages}`;
@@ -332,6 +331,7 @@ metadataLines.forEach(line => {
 };
 
   const previewPdf = async () => {
+    setIsSending(true);
     const pdf = await generatePdf();
     const blob = pdf.output('blob');
     const url = URL.createObjectURL(blob);
@@ -349,7 +349,7 @@ const sendEmail = async () => {
 
   try {
     const pdf = await generatePdf();
-    const pdfBlob = pdf.output('blob');
+    const pdfBlob = pdf.output('blob', { compress: true });
 
     const formData = new FormData();
     formData.append('reporterName', reporterName);

@@ -656,9 +656,14 @@ const sendEmail = async () => {
       >
         X
       </button>
-
               {/* PDF Viewer */}
-              <div style={{ height: '60vh', width: '50vh', marginTop: '40px' }}>
+              <div style={{
+                    margin: 'auto',
+                    marginTop: '40px',
+                    width: '90vw',
+                    height: '80vh',
+                    maxWidth: '800px',
+                  }}>
                 <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
                   <Viewer fileUrl={pdfPreview} />
                 </Worker>

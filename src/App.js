@@ -51,7 +51,7 @@ function App() {
 
   for (let i = 0; i < capturedImages.length; i++) {
     try {
-      const imageDataUrl = capturedImages[i];
+      const imageDataUrl = capturedImages[i].imageSrc;
       const response = await fetch(imageDataUrl);
       const blob = await response.blob();
       zip.file(`image_${i + 1}.jpeg`, blob);

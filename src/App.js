@@ -349,7 +349,7 @@ const sendEmail = async () => {
     formData.append('facilityName', facilityName);
     formData.append('pdf', pdfBlob, 'report.pdf');
 
-    const response = await fetch('https://capital-backend-lyyq.onrender.com', {
+    const response = await fetch('https://capital-backend-lyyq.onrender.com/send-email', {
       method: 'POST',
       body: formData,
     });

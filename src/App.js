@@ -170,14 +170,20 @@ const generatePdf = async () => {
   // Cover Page
 
   // ✅ Top-left Facility Name clearly above logo
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(42);
-  pdf.setTextColor(0, 0, 0);
-  pdf.text(
-    facilityName || capturedImages[0]?.facility || "Facility Name",
-    150,
-    60 // Very top of page
-  );
+const facilityText = facilityName || capturedImages[0]?.facility;
+const facilityTextWidth = pdf.getTextWidth(facilityText);
+const facilityCenterX = (1920 - facilityTextWidth) / 2;
+pdf.setFont("helvetica", "normal");
+pdf.setFontSize(78);
+pdf.text(facilityText, facilityCenterX, 80);
+
+const reporterText = reporterName || capturedImages[0]?.reporter;
+const reporterTextWidth = pdf.getTextWidth(reporterText);
+const reporterCenterX = (1920 - reporterTextWidth) / 2;
+pdf.setFont("helvetica", "normal");
+pdf.setFontSize(78);
+pdf.text(reporterText, reporterCenterX, 1120);
+
 
   // ✅ Centered Logo
   const logoWidth = 1200;
@@ -187,14 +193,21 @@ const generatePdf = async () => {
   pdf.addImage(capital_image_template, 'JPEG', logoX, logoY, logoWidth, logoHeight, '', 'FAST');
 
   // ✅ Bottom-left Reporter Name
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(42);
-  pdf.setTextColor(0, 0, 0);
-  pdf.text(
-    reporterName || capturedImages[0]?.reporter || "Reporter Name",
-    150,
-    1120 // Slightly above footer area
-  );
+// // Set font and color
+// pdf.setFont("helvetica", "normal");
+// pdf.setFontSize(36);
+// pdf.setTextColor(0, 0, 0);
+
+// Reporter name text
+// const reporterText = reporterName || capturedImages[0]?.reporter || "Reporter Name";
+
+// Calculate center X
+// const reporterTextWidth = pdf.getTextWidth(reporterText);
+const centerX = (1920 - reporterTextWidth) / 2;
+
+// Draw reporter name centered near the bottom
+pdf.text(reporterText, centerX, 1120); // Y = 1120 is just above the footer
+
 
   // ✅ Page number, bottom-right
   const firstPageNumber = `Page 1 of ${capturedImages.length + 1}`;
@@ -428,7 +441,7 @@ const uploadToICloud = async () => {
             textAlign:'left'
           }}
         >
-    {capturedImages.map((item, idx) => (
+{capturedImages.map((item, idx) => (
   <div
     key={idx}
     className={focusedTileIndex === idx ? 'tile-glow' : ''}

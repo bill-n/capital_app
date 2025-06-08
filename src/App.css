@@ -602,4 +602,23 @@ body {
   }
 }
 
+@keyframes tileGlow {
+  0% {
+    box-shadow: 0 0 0px rgba(0, 123, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(0, 123, 255, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 0px rgba(0, 123, 255, 0.4);
+  }
+}
+
+.tile-glow {
+  animation: tileGlow 1.5s ease-in-out infinite;
+  border: 2px solid #007bff !important;
+  border-radius: 8px;
+}
+
+
 

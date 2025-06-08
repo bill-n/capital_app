@@ -25,6 +25,7 @@ function App() {
   const [reporterName] = useState('');
   const [facilityName] = useState('');
   const [facingMode, setFacingMode] = useState('environment');
+  const [focusedTileIndex, setFocusedTileIndex] = useState(null);
   const [location, setLocation] = useState({
     latitude: null,
     longitude: null,
@@ -254,8 +255,8 @@ pdf.roundedRect(metaBoxX, metaBoxY, metaBoxWidth, metaBoxHeight, cornerRadius, c
 let textY = metaBoxY + 25;
 pdf.setTextColor(255, 255, 255);
 metadataLines.forEach(line => {
-  pdf.text(line, metaBoxX + 15, textY);
-  textY += 25;
+pdf.text(line, metaBoxX + 15, textY);
+textY += 25;
 });
 
 
@@ -264,6 +265,7 @@ metadataLines.forEach(line => {
     pdf.line(40, 1100, 1900, 1100);
     pdf.setFontSize(24);
     pdf.setTextColor(0, 0, 0);
+    // const reporterText = `Reported by: ${reporterName || 'N/A'}`;
     const locationFooter = `${location.street || ''} ${location.houseNumber || ''} ${location.zipcode || ''} ${location.city || ''}`.trim();
     pdf.text(locationFooter, 50, 1150);
 
@@ -406,129 +408,138 @@ const uploadToICloud = async () => {
             textAlign:'left'
           }}
         >
-          {capturedImages.map((item, idx) => (
-        <div
-          key={idx}
-          style={{
-            position: 'relative',
-            width: '150px',
-            border: '1px solid #ccc',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            background: '#fff',
-            padding: '5px',
-            flex: '1 1 150px',
-            maxWidth: '200px',
-            minWidth: '150px',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
+    {capturedImages.map((item, idx) => (
+  <div
+    key={idx}
+    className={focusedTileIndex === idx ? 'tile-glow' : ''}
+    style={{
+      position: 'relative',
+      width: '150px',
+      border: '1px solid #ccc',
+      borderRadius: '8px',
+      overflow: 'hidden',
+      background: '#fff',
+      padding: '5px',
+      flex: '1 1 150px',
+      maxWidth: '200px',
+      minWidth: '150px',
+      display: 'flex',
+      flexDirection: 'column',
+    }}
+  >
+    <img
+      src={item.imageSrc}
+      alt={`Captured ${idx}`}
+      style={{
+        width: '100%',
+        height: 'auto',
+        borderRadius: '4px',
+        display: 'block',
+      }}
+    />
+
+    <button
+      onClick={() => removeImage(idx)}
+      style={{
+        position: 'absolute',
+        top: '5px',
+        right: '5px',
+        background: 'red',
+        color: 'white',
+        border: 'none',
+        borderRadius: '50%',
+        width: '24px',
+        height: '24px',
+        cursor: 'pointer',
+        fontSize: '16px',
+        lineHeight: '24px',
+        textAlign: 'center',
+      }}
+      title="Remove image"
+    >
+      ✕
+    </button>
+
+    <div
+      style={{
+        fontSize: '12px',
+        marginTop: '6px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '6px',
+      }}
+    >
+      <label style={{ display: 'flex', flexDirection: 'column' }}>
+        <strong>Type:</strong>
+        <select
+          value={item.type}
+          onChange={(e) => updateCapturedImage(idx, 'type', e.target.value)}
+          onFocus={() => setFocusedTileIndex(idx)}
+          onBlur={() => setFocusedTileIndex(null)}
+          style={{ fontSize: '12px', padding: '4px' }}
         >
-          <img
-            src={item.imageSrc}
-            alt={`Captured ${idx}`}
-            style={{
-              width: '100%',
-              height: 'auto',
-              borderRadius: '4px',
-              display: 'block',
-            }}
-          />
+          <option value="Classroom">Classroom</option>
+          <option value="Floor">Floor</option>
+          <option value="Restroom">Restroom</option>
+          <option value="Stairs">Stairs</option>
+        </select>
+      </label>
 
-          {/* ✕ Remove button */}
-          <button
-            onClick={() => removeImage(idx)}
-            style={{
-              position: 'absolute',
-              top: '5px',
-              right: '5px',
-              background: 'red',
-              color: 'white',
-              border: 'none',
-              borderRadius: '50%',
-              width: '24px',
-              height: '24px',
-              cursor: 'pointer',
-              fontSize: '16px',
-              lineHeight: '24px',
-              textAlign: 'center',
-            }}
-            title="Remove image"
-          >
-            ✕
-          </button>
+      <label style={{ display: 'flex', flexDirection: 'column' }}>
+        <strong>Description:</strong>
+        <select
+          value={item.description}
+          onChange={(e) => updateCapturedImage(idx, 'description', e.target.value)}
+          onFocus={() => setFocusedTileIndex(idx)}
+          onBlur={() => setFocusedTileIndex(null)}
+          style={{ fontSize: '12px', padding: '4px' }}
+        >
+          <option value="Sauber">Sauber</option>
+          <option value="Nicht sauber">Nicht sauber</option>
+        </select>
+      </label>
 
-          {/* Editable Fields */}
-          <div
-            style={{
-              fontSize: '12px',
-              marginTop: '6px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '6px',
-            }}
-          >
-            <label style={{ display: 'flex', flexDirection: 'column' }}>
-              <strong>Type:</strong>
-              <select
-                value={item.type}
-                onChange={(e) => updateCapturedImage(idx, 'type', e.target.value)}
-                style={{ fontSize: '12px', padding: '4px' }}
-              >
-                <option value="Classroom">Classroom</option>
-                <option value="Floor">Floor</option>
-                <option value="Restroom">Restroom</option>
-                <option value="Stairs">Stairs</option>
-              </select>
-            </label>
+      <label style={{ display: 'flex', flexDirection: 'column' }}>
+        <strong>Floor:</strong>
+        <select
+          value={item.floor}
+          onChange={(e) => updateCapturedImage(idx, 'floor', e.target.value)}
+          onFocus={() => setFocusedTileIndex(idx)}
+          onBlur={() => setFocusedTileIndex(null)}
+          style={{ fontSize: '12px', padding: '4px' }}
+        >
+          {[...Array(50)].map((_, i) => (
+            <option key={i} value={i + 1}>{i + 1}</option>
+          ))}
+        </select>
+      </label>
 
-            <label style={{ display: 'flex', flexDirection: 'column' }}>
-              <strong>Description:</strong>
-              <select
-                value={item.description}
-                onChange={(e) => updateCapturedImage(idx, 'description', e.target.value)}
-                style={{ fontSize: '12px', padding: '4px' }}
-              >
-                <option value="Sauber">Sauber</option>
-                <option value="Nicht sauber">Nicht sauber</option>
-              </select>
-            </label>
+      <label style={{ display: 'flex', flexDirection: 'column' }}>
+        <strong>Reporter:</strong>
+        <input
+          type="text"
+          value={item.reporter}
+          onChange={(e) => updateCapturedImage(idx, 'reporter', e.target.value)}
+          onFocus={() => setFocusedTileIndex(idx)}
+          onBlur={() => setFocusedTileIndex(null)}
+          style={{ fontSize: '12px', padding: '4px' }}
+        />
+      </label>
 
-            <label style={{ display: 'flex', flexDirection: 'column' }}>
-              <strong>Reporter:</strong>
-              <input
-                type="text"
-                value={item.reporter}
-                onChange={(e) => updateCapturedImage(idx, 'reporter', e.target.value)}
-                style={{ fontSize: '12px', padding: '4px' }}
-              />
-            </label>
-
-            <label style={{ display: 'flex', flexDirection: 'column' }}>
-              <strong>Facility:</strong>
-              <input
-                type="text"
-                value={item.facility}
-                onChange={(e) => updateCapturedImage(idx, 'facility', e.target.value)}
-                style={{ fontSize: '12px', padding: '4px' }}
-              />
-            </label>
-
-            <label style={{ display: 'flex', flexDirection: 'column' }}>
-              <strong>Floor:</strong>
-              <select
-                value={item.floor}
-                onChange={(e) => updateCapturedImage(idx, 'floor', e.target.value)}
-                style={{ fontSize: '12px', padding: '4px' }}
-              >
-                {[...Array(50)].map((_, i) => (
-                  <option key={i} value={i + 1}>{i + 1}</option>
-                ))}
-              </select>
-            </label>
-          </div>
-        </div>
-      ))}
+      <label style={{ display: 'flex', flexDirection: 'column' }}>
+        <strong>Facility:</strong>
+        <input
+          type="text"
+          value={item.facility}
+          onChange={(e) => updateCapturedImage(idx, 'facility', e.target.value)}
+          onFocus={() => setFocusedTileIndex(idx)}
+          onBlur={() => setFocusedTileIndex(null)}
+          style={{ fontSize: '12px', padding: '4px' }}
+        />
+      </label>
+    </div>
+  </div>
+))}
 
   </div>
 

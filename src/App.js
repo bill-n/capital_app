@@ -168,18 +168,39 @@ const generatePdf = async () => {
   const capital_image_logo = await getBase64ImageFromURL('capital_image_logo.png');
 
   // Cover Page
-  pdf.setFontSize(60);
-  pdf.text(facilityName, 50, 100);
+
+  // ✅ Top-left Facility Name clearly above logo
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(42);
+  pdf.setTextColor(0, 0, 0);
+  pdf.text(
+    facilityName || capturedImages[0]?.facility || "Facility Name",
+    150,
+    60 // Very top of page
+  );
+
+  // ✅ Centered Logo
   const logoWidth = 1200;
   const logoHeight = 900;
   const logoX = (1920 - logoWidth) / 2;
-  const logoY = 150;
-  pdf.addImage(capital_image_template, 'JPEG', logoX, logoY, logoWidth, logoHeight,'','FAST');
-  pdf.setFontSize(36);
-  pdf.text(`${reporterName}`, 150, 1150);
-  const firstPageNumber = `Page 1 of ${totalPages}`;
+  const logoY = 100; // Start below the title
+  pdf.addImage(capital_image_template, 'JPEG', logoX, logoY, logoWidth, logoHeight, '', 'FAST');
+
+  // ✅ Bottom-left Reporter Name
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(42);
+  pdf.setTextColor(0, 0, 0);
+  pdf.text(
+    reporterName || capturedImages[0]?.reporter || "Reporter Name",
+    150,
+    1120 // Slightly above footer area
+  );
+
+  // ✅ Page number, bottom-right
+  const firstPageNumber = `Page 1 of ${capturedImages.length + 1}`;
   const firstPageNumberWidth = pdf.getTextWidth(firstPageNumber);
   pdf.setFontSize(24);
+  pdf.setTextColor(100, 100, 100);
   pdf.text(firstPageNumber, 1920 - firstPageNumberWidth - 50, 1150);
 
   // For each captured image
@@ -265,7 +286,6 @@ textY += 25;
     pdf.line(40, 1100, 1900, 1100);
     pdf.setFontSize(24);
     pdf.setTextColor(0, 0, 0);
-    // const reporterText = `Reported by: ${reporterName || 'N/A'}`;
     const locationFooter = `${location.street || ''} ${location.houseNumber || ''} ${location.zipcode || ''} ${location.city || ''}`.trim();
     pdf.text(locationFooter, 50, 1150);
 

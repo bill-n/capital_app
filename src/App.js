@@ -19,12 +19,12 @@ function App() {
   const [isSending, setIsSending] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [capturedImages, setCapturedImages] = useState([]);
-  const [selectedFloor, setSelectedFloor] = useState('1');
-  const [selectedType, setSelectedType] = useState('Classroom');
-  const [selectedDescription, setSelectedDescription] = useState('Sauber');
-  const [reporterName, setReporterName] = useState('');
-  const [facilityName, setfacilityName] = useState('');
-  const [facilityTouched, setFacilityTouched] = useState(false);
+  const [selectedFloor] = useState('1');
+  const [selectedType] = useState('Classroom');
+  const [selectedDescription] = useState('Sauber');
+  const [reporterName] = useState('');
+  const [facilityName] = useState('');
+  // const [setFacilityTouched] = useState(false);
   const [facingMode, setFacingMode] = useState('environment');
   const [location, setLocation] = useState({
     latitude: null,
@@ -175,13 +175,13 @@ function App() {
 // };
 
 const captureImage = () => {
-  if (!facilityName.trim()) {
-    setFacilityTouched(true);
-    toast.error("Please enter the name of the facility before capturing an image.");
-    return;
-  }
+  // if (!facilityName.trim()) {
+  //   setFacilityTouched(true);
+  //   toast.error("Please enter the name of the facility before capturing an image.");
+  //   return;
+  // }
 
-  setFacilityTouched(false); // clear the red warning if it was previously triggered
+  // setFacilityTouched(false); // clear the red warning if it was previously triggered
 
   const imageSrc = webcamRef.current?.getScreenshot();
   if (imageSrc) {
@@ -313,11 +313,12 @@ const generatePdf = async () => {
   `${location.latitude}`,
   `${location.longitude}`,
   `${location.timestamp}`,
-  `${selectedFloor} ${selectedType}`,
-  `${location.street}`, 
-  `${location.zipcode} ${location.houseNumber}`,
+  `Floor: ${item.floor}`,
+  `${item.type}`, // ✅ use per-image values
+  `${location.street} ${location.zipcode} ${location.houseNumber}`,
   `${location.city} ${location.country}`
 ];
+
 pdf.setFontSize(20);
 const metaBoxWidth = 300;
 const metaBoxHeight = metadataLines.length * 25 + 20;
@@ -407,6 +408,13 @@ metadataLines.forEach(line => {
 //     setIsSending(false);
 //   }
 // };
+const updateCapturedImage = (index, field, value) => {
+  setCapturedImages((prevImages) =>
+    prevImages.map((img, idx) =>
+      idx === index ? { ...img, [field]: value } : img
+    )
+  );
+};
 
 const uploadToICloud = async () => {
   if (capturedImages.length === 0) {
@@ -495,7 +503,7 @@ const uploadToICloud = async () => {
               Capture Image
             </button>
         </div>
-        <div className="dropdown-container">
+        {/* <div className="dropdown-container">
           <label>Floor:</label>
           <select value={selectedFloor} onChange={(e) => setSelectedFloor(e.target.value)}>
             {[...Array(50)].map((_, i) => (
@@ -545,7 +553,7 @@ const uploadToICloud = async () => {
               }}
             />
 
-        </div>
+        </div> */}
       </div>
 
       <ToastContainer position="bottom-right" autoClose={3000} />
@@ -611,13 +619,57 @@ const uploadToICloud = async () => {
           ✕
         </button>
 
-        <div style={{ fontSize: '12px', marginTop: '6px', wordWrap: 'break-word' }}>
-          <p><strong>Type:</strong> {item.type}</p>
-          <p><strong>Description:</strong> {item.description}</p>
-          <p><strong>Reporter:</strong> {item.reporter}</p>
-          <p><strong>Facility:</strong> {item.facility}</p>
-          <p><strong>Floor:</strong> {item.floor}</p>
-        </div>
+          <div style={{ fontSize: '12px', marginTop: '6px', wordWrap: 'break-word' }}>
+  <label><strong>Type:</strong>
+    <select
+      value={item.type}
+      onChange={(e) => updateCapturedImage(idx, 'type', e.target.value)}
+    >
+      <option value="Classroom">Classroom</option>
+      <option value="Floor">Floor</option>
+      <option value="Restroom">Restroom</option>
+      <option value="Stairs">Stairs</option>
+    </select>
+  </label>
+
+  <label><strong>Description:</strong>
+    <select
+      value={item.description}
+      onChange={(e) => updateCapturedImage(idx, 'description', e.target.value)}
+    >
+      <option value="Sauber">Sauber</option>
+      <option value="Nicht sauber">Nicht sauber</option>
+    </select>
+  </label>
+
+    <label><strong>Floor:</strong>
+    <select
+      value={item.floor}
+      onChange={(e) => updateCapturedImage(idx, 'floor', e.target.value)}
+    >
+      {[...Array(50)].map((_, i) => (
+        <option key={i} value={i + 1}>{i + 1}</option>
+      ))}
+    </select>
+  </label>
+
+  <label><strong>Reporter:</strong>
+    <input
+      type="text"
+      value={item.reporter}
+      onChange={(e) => updateCapturedImage(idx, 'reporter', e.target.value)}
+    />
+  </label>
+
+  <label><strong>Facility:</strong>
+    <input
+      type="text"
+      value={item.facility}
+      onChange={(e) => updateCapturedImage(idx, 'facility', e.target.value)}
+    />
+  </label>
+</div>
+
       </div>
     ))}
   </div>

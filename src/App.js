@@ -22,8 +22,8 @@ function App() {
   const [selectedFloor] = useState('1');
   const [selectedType] = useState('Classroom');
   const [selectedDescription] = useState('Sauber');
-  const [reporterName] = useState('');
-  const [facilityName] = useState('');
+  const [reporterName, setReporterName] = useState('');
+  const [facilityName, setFacilityName] = useState('');
   const [facingMode, setFacingMode] = useState('environment');
   const [focusedTileIndex, setFocusedTileIndex] = useState(null);
 
@@ -429,6 +429,57 @@ const uploadToICloud = async () => {
       </div>
 
       <ToastContainer position="bottom-right" autoClose={3000} />
+      <div
+        className="global-inputs"
+        style={{
+          margin: '15px auto',
+          padding: '15px',
+          maxWidth: '400px',
+          backgroundColor: '#f9f9f9',
+          borderRadius: '12px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: '15px',
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', flex: '1 1 250px' }}>
+          <label style={{ marginBottom: '8px', fontWeight: '600', color: '#333' }}>
+            Facility Name:
+          </label>
+          <input
+            type="text"
+            value={facilityName}
+            onChange={(e) => setFacilityName(e.target.value)}
+            placeholder="Enter facility"
+            style={{
+              padding: '10px 12px',
+              border: '1px solid #ccc',
+              borderRadius: '8px',
+              fontSize: '16px',
+            }}
+          />
+        </div>
+
+    <div style={{ display: 'flex', flexDirection: 'column', flex: '1 1 250px' }}>
+      <label style={{ marginBottom: '8px', fontWeight: '600', color: '#333' }}>
+        Reporter Name:
+      </label>
+      <input
+        type="text"
+        value={reporterName}
+        onChange={(e) => setReporterName(e.target.value)}
+        placeholder="Enter reporter"
+        style={{
+          padding: '10px 12px',
+          border: '1px solid #ccc',
+          borderRadius: '8px',
+          fontSize: '16px',
+        }}
+      />
+      </div>
+    </div>
 
       {capturedImages.length > 0 && (
         <div className="captured-image-container" style={{ width: '100%' }}>
@@ -442,89 +493,66 @@ const uploadToICloud = async () => {
             textAlign:'left'
           }}
         >
-{capturedImages.map((item, idx) => (
-  <div
-    key={idx}
-    className={`image-tile ${focusedTileIndex === idx ? 'tile-glow' : ''}`}
-  >
-    <img src={item.imageSrc} alt={`Captured ${idx}`} className="tile-image" />
+    {capturedImages.map((item, idx) => (
+      <div
+        key={idx}
+        className={`image-tile ${focusedTileIndex === idx ? 'tile-glow' : ''}`}
+      >
+        <img src={item.imageSrc} alt={`Captured ${idx}`} className="tile-image" />
 
-    <button
-      onClick={() => removeImage(idx)}
-      className="tile-remove-button"
-      title="Remove image"
-    >
-      ✕
-    </button>
-
-    <div className="tile-fields">
-      <label>
-        <strong>Type:</strong>
-        <select
-          value={item.type}
-          onChange={(e) => updateCapturedImage(idx, 'type', e.target.value)}
-          onFocus={() => setFocusedTileIndex(idx)}
-          onBlur={() => setFocusedTileIndex(null)}
+        <button
+          onClick={() => removeImage(idx)}
+          className="tile-remove-button"
+          title="Remove image"
         >
-          <option value="Classroom">Classroom</option>
-          <option value="Floor">Floor</option>
-          <option value="Restroom">Restroom</option>
-          <option value="Stairs">Stairs</option>
-        </select>
-      </label>
+          ✕
+        </button>
 
-      <label>
-        <strong>Description:</strong>
-        <select
-          value={item.description}
-          onChange={(e) => updateCapturedImage(idx, 'description', e.target.value)}
-          onFocus={() => setFocusedTileIndex(idx)}
-          onBlur={() => setFocusedTileIndex(null)}
-        >
-          <option value="Sauber">Sauber</option>
-          <option value="Nicht sauber">Nicht sauber</option>
-        </select>
-      </label>
+        <div className="tile-fields">
+          <label>
+            <strong>Type:</strong>
+            <select
+              value={item.type}
+              onChange={(e) => updateCapturedImage(idx, 'type', e.target.value)}
+              onFocus={() => setFocusedTileIndex(idx)}
+              onBlur={() => setFocusedTileIndex(null)}
+            >
+              <option value="Classroom">Classroom</option>
+              <option value="Floor">Floor</option>
+              <option value="Restroom">Restroom</option>
+              <option value="Stairs">Stairs</option>
+            </select>
+          </label>
 
-      <label>
-        <strong>Floor:</strong>
-        <select
-          value={item.floor}
-          onChange={(e) => updateCapturedImage(idx, 'floor', e.target.value)}
-          onFocus={() => setFocusedTileIndex(idx)}
-          onBlur={() => setFocusedTileIndex(null)}
-        >
-          {[...Array(50)].map((_, i) => (
-            <option key={i} value={i + 1}>{i + 1}</option>
-          ))}
-        </select>
-      </label>
+          <label>
+            <strong>Description:</strong>
+            <select
+              value={item.description}
+              onChange={(e) => updateCapturedImage(idx, 'description', e.target.value)}
+              onFocus={() => setFocusedTileIndex(idx)}
+              onBlur={() => setFocusedTileIndex(null)}
+            >
+              <option value="Sauber">Sauber</option>
+              <option value="Nicht sauber">Nicht sauber</option>
+            </select>
+          </label>
 
-      <label>
-        <strong>Reporter:</strong>
-        <input
-          type="text"
-          value={item.reporter}
-          onChange={(e) => updateCapturedImage(idx, 'reporter', e.target.value)}
-          onFocus={() => setFocusedTileIndex(idx)}
-          onBlur={() => setFocusedTileIndex(null)}
-        />
-      </label>
-
-      <label>
-        <strong>Facility:</strong>
-        <input
-          type="text"
-          value={item.facility}
-          onChange={(e) => updateCapturedImage(idx, 'facility', e.target.value)}
-          onFocus={() => setFocusedTileIndex(idx)}
-          onBlur={() => setFocusedTileIndex(null)}
-        />
-      </label>
-    </div>
-  </div>
-))}
-
+          <label>
+            <strong>Floor:</strong>
+            <select
+              value={item.floor}
+              onChange={(e) => updateCapturedImage(idx, 'floor', e.target.value)}
+              onFocus={() => setFocusedTileIndex(idx)}
+              onBlur={() => setFocusedTileIndex(null)}
+            >
+              {[...Array(50)].map((_, i) => (
+                <option key={i} value={i + 1}>{i + 1}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </div>
+    ))}
 
   </div>
 
@@ -581,37 +609,44 @@ const uploadToICloud = async () => {
       )}
 
       {isModalOpen && (
+      <div
+  className="modal-backdrop"
+  onClick={() => setIsModalOpen(false)}
+  style={{
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 1000,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '20px', // Add spacing for smaller screens
+    boxSizing: 'border-box',
+  }}
+>
   <div
-    className="modal-backdrop"
-    onClick={() => setIsModalOpen(false)} // close on outside click
+    className="modal-content"
+    onClick={(e) => e.stopPropagation()}
     style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
+      position: 'relative',
+      backgroundColor: '#fff',
+      borderRadius: '12px',
+      padding: '20px',
       width: '100%',
+      maxWidth: '800px',
       height: '100%',
-      backgroundColor: 'rgba(0,0,0,0.7)',
+      maxHeight: '90vh',
+      overflow: 'auto',
       display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000,
+      flexDirection: 'column',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
     }}
   >
-    <div
-      className="modal-content"
-      onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
-      style={{
-        position: 'relative',
-        backgroundColor: '#fff',
-        borderRadius: '8px',
-        padding: '20px',
-        maxWidth: '70%',
-        maxHeight: '70%',
-        overflow: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
+
+
       {/* Close Button */}
       <button
         onClick={() => setIsModalOpen(false)}
@@ -636,9 +671,11 @@ const uploadToICloud = async () => {
               {/* PDF Viewer */}
               <div style={{
                     margin: 'auto',
+                    flex:1,
                     marginTop: '40px',
-                    width: '90vw',
-                    height: '80vh',
+                    overflow:'auto',
+                    width: '100%',
+                    // height: '80vh',
                     maxWidth: '800px',
                   }}>
                 <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>

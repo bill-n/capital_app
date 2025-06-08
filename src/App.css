@@ -729,6 +729,7 @@ body {
   font-size: 13px;
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 
 .tile-fields select,
@@ -756,6 +757,7 @@ body {
   .tile-fields input {
     font-size: 12px;
     padding: 5px;
+    width: 100%;
   }
 
   .tile-fields label {

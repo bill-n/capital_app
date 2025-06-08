@@ -770,7 +770,7 @@ const uploadToICloud = async () => {
         padding: '20px',
         maxWidth: '70%',
         maxHeight: '70%',
-        overflow: 'hidden',
+        overflow: 'auto',
         display: 'flex',
         flexDirection: 'column',
       }}

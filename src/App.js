@@ -6,7 +6,6 @@ import { jsPDF } from 'jspdf';
 import { gapi } from 'gapi-script';
 import './App.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import '@react-pdf-viewer/core/lib/styles/index.css';
@@ -44,59 +43,59 @@ function App() {
   const authInstanceRef = useRef(null);
 
   const isMobileDevice = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  const downloadImagesAsZip = async () => {
-  if (capturedImages.length === 0) {
-    toast.warn('No images to download.');
-    return;
-  }
+//   const downloadImagesAsZip = async () => {
+//   if (capturedImages.length === 0) {
+//     toast.warn('No images to download.');
+//     return;
+//   }
 
-  const zip = new JSZip();
+//   const zip = new JSZip();
 
-  for (let i = 0; i < capturedImages.length; i++) {
-    try {
-      const imageDataUrl = capturedImages[i].imageSrc;
-      const response = await fetch(imageDataUrl);
-      const blob = await response.blob();
-      zip.file(`image_${i + 1}.jpeg`, blob);
-    } catch (error) {
-      console.error(`Error fetching image ${i + 1}`, error);
-    }
-  }
+//   for (let i = 0; i < capturedImages.length; i++) {
+//     try {
+//       const imageDataUrl = capturedImages[i].imageSrc;
+//       const response = await fetch(imageDataUrl);
+//       const blob = await response.blob();
+//       zip.file(`image_${i + 1}.jpeg`, blob);
+//     } catch (error) {
+//       console.error(`Error fetching image ${i + 1}`, error);
+//     }
+//   }
 
-const now = new Date();
-const datetime = now
-  .toLocaleString('sv-SE', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-  .replace(' ', '_')
-  .replace(/:/g, '-');
+// const now = new Date();
+// const datetime = now
+//   .toLocaleString('sv-SE', {
+//     year: 'numeric',
+//     month: '2-digit',
+//     day: '2-digit',
+//     hour: '2-digit',
+//     minute: '2-digit',
+//   })
+//   .replace(' ', '_')
+//   .replace(/:/g, '-');
 
-const clean = (str) =>
-  (str || '').trim().replace(/\s+/g, '').replace(/[^a-zA-Z0-9_-]/g, '');
+// const clean = (str) =>
+//   (str || '').trim().replace(/\s+/g, '').replace(/[^a-zA-Z0-9_-]/g, '');
 
-const reporter = clean(reporterName);
-const facility = clean(facilityName);
+// const reporter = clean(reporterName);
+// const facility = clean(facilityName);
 
-// ✅ Define filename BEFORE loop
-const filename = `${reporter}_${facility}_${datetime}.zip`;
+// // ✅ Define filename BEFORE loop
+// const filename = `${reporter}_${facility}_${datetime}.zip`;
 
-// Loop over images and add to ZIP using filename
-for (let i = 0; i < capturedImages.length; i++) {
-  const imageDataUrl = capturedImages[i].imageSrc;
-  const response = await fetch(imageDataUrl);
-  const blob = await response.blob();
+// // Loop over images and add to ZIP using filename
+// for (let i = 0; i < capturedImages.length; i++) {
+//   const imageDataUrl = capturedImages[i].imageSrc;
+//   const response = await fetch(imageDataUrl);
+//   const blob = await response.blob();
 
-  zip.file(`${filename.replace('.zip', '')}_${i + 1}.jpeg`, blob); // name image same as zip
-}
+//   zip.file(`${filename.replace('.zip', '')}_${i + 1}.jpeg`, blob); // name image same as zip
+// }
 
-const zipBlob = await zip.generateAsync({ type: "blob" });
-saveAs(zipBlob, filename);
+// const zipBlob = await zip.generateAsync({ type: "blob" });
+// saveAs(zipBlob, filename);
 
-};
+// };
 
   useEffect(() => {
     function start() {

@@ -26,6 +26,7 @@ function App() {
   const [facilityName] = useState('');
   const [facingMode, setFacingMode] = useState('environment');
   const [focusedTileIndex, setFocusedTileIndex] = useState(null);
+
   const [location, setLocation] = useState({
     latitude: null,
     longitude: null,
@@ -444,72 +445,26 @@ const uploadToICloud = async () => {
 {capturedImages.map((item, idx) => (
   <div
     key={idx}
-    className={focusedTileIndex === idx ? 'tile-glow' : ''}
-    style={{
-      position: 'relative',
-      width: '150px',
-      border: '1px solid #ccc',
-      borderRadius: '8px',
-      overflow: 'hidden',
-      background: '#fff',
-      padding: '5px',
-      flex: '1 1 150px',
-      maxWidth: '200px',
-      minWidth: '150px',
-      display: 'flex',
-      flexDirection: 'column',
-    }}
+    className={`image-tile ${focusedTileIndex === idx ? 'tile-glow' : ''}`}
   >
-    <img
-      src={item.imageSrc}
-      alt={`Captured ${idx}`}
-      style={{
-        width: '100%',
-        height: 'auto',
-        borderRadius: '4px',
-        display: 'block',
-      }}
-    />
+    <img src={item.imageSrc} alt={`Captured ${idx}`} className="tile-image" />
 
     <button
       onClick={() => removeImage(idx)}
-      style={{
-        position: 'absolute',
-        top: '5px',
-        right: '5px',
-        background: 'red',
-        color: 'white',
-        border: 'none',
-        borderRadius: '50%',
-        width: '24px',
-        height: '24px',
-        cursor: 'pointer',
-        fontSize: '16px',
-        lineHeight: '24px',
-        textAlign: 'center',
-      }}
+      className="tile-remove-button"
       title="Remove image"
     >
       ✕
     </button>
 
-    <div
-      style={{
-        fontSize: '12px',
-        marginTop: '6px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '6px',
-      }}
-    >
-      <label style={{ display: 'flex', flexDirection: 'column' }}>
+    <div className="tile-fields">
+      <label>
         <strong>Type:</strong>
         <select
           value={item.type}
           onChange={(e) => updateCapturedImage(idx, 'type', e.target.value)}
           onFocus={() => setFocusedTileIndex(idx)}
           onBlur={() => setFocusedTileIndex(null)}
-          style={{ fontSize: '12px', padding: '4px' }}
         >
           <option value="Classroom">Classroom</option>
           <option value="Floor">Floor</option>
@@ -518,28 +473,26 @@ const uploadToICloud = async () => {
         </select>
       </label>
 
-      <label style={{ display: 'flex', flexDirection: 'column' }}>
+      <label>
         <strong>Description:</strong>
         <select
           value={item.description}
           onChange={(e) => updateCapturedImage(idx, 'description', e.target.value)}
           onFocus={() => setFocusedTileIndex(idx)}
           onBlur={() => setFocusedTileIndex(null)}
-          style={{ fontSize: '12px', padding: '4px' }}
         >
           <option value="Sauber">Sauber</option>
           <option value="Nicht sauber">Nicht sauber</option>
         </select>
       </label>
 
-      <label style={{ display: 'flex', flexDirection: 'column' }}>
+      <label>
         <strong>Floor:</strong>
         <select
           value={item.floor}
           onChange={(e) => updateCapturedImage(idx, 'floor', e.target.value)}
           onFocus={() => setFocusedTileIndex(idx)}
           onBlur={() => setFocusedTileIndex(null)}
-          style={{ fontSize: '12px', padding: '4px' }}
         >
           {[...Array(50)].map((_, i) => (
             <option key={i} value={i + 1}>{i + 1}</option>
@@ -547,7 +500,7 @@ const uploadToICloud = async () => {
         </select>
       </label>
 
-      <label style={{ display: 'flex', flexDirection: 'column' }}>
+      <label>
         <strong>Reporter:</strong>
         <input
           type="text"
@@ -555,11 +508,10 @@ const uploadToICloud = async () => {
           onChange={(e) => updateCapturedImage(idx, 'reporter', e.target.value)}
           onFocus={() => setFocusedTileIndex(idx)}
           onBlur={() => setFocusedTileIndex(null)}
-          style={{ fontSize: '12px', padding: '4px' }}
         />
       </label>
 
-      <label style={{ display: 'flex', flexDirection: 'column' }}>
+      <label>
         <strong>Facility:</strong>
         <input
           type="text"
@@ -567,12 +519,12 @@ const uploadToICloud = async () => {
           onChange={(e) => updateCapturedImage(idx, 'facility', e.target.value)}
           onFocus={() => setFocusedTileIndex(idx)}
           onBlur={() => setFocusedTileIndex(null)}
-          style={{ fontSize: '12px', padding: '4px' }}
         />
       </label>
     </div>
   </div>
 ))}
+
 
   </div>
 

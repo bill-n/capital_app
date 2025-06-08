@@ -676,4 +676,90 @@ body {
   }
 }
 
+.captured-image {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.image-tile {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  flex: 1 1 200px;
+  max-width: 250px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.tile-image {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.tile-remove-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+}
+
+.tile-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.tile-fields label {
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tile-fields select,
+.tile-fields input {
+  font-size: 13px;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .captured-image {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .image-tile {
+    width: 90% !important;
+    max-width: 100%;
+  }
+
+  .tile-fields select,
+  .tile-fields input {
+    font-size: 12px;
+    padding: 5px;
+  }
+
+  .tile-fields label {
+    font-size: 12px;
+  }
+}
 

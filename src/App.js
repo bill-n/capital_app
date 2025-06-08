@@ -339,35 +339,60 @@ metadataLines.forEach(line => {
     setIsModalOpen(true);
   };
 
-const sendEmail = async () => {
+// const sendEmail = async () => {
+//   if (capturedImages.length === 0) {
+//     toast.warn('No images captured.');
+//     return;
+//   }
+
+//   setIsSending(true);
+
+//   try {
+//     const pdf = await generatePdf();
+//     const pdfBlob = pdf.output('blob', { compress: true });
+
+//     const formData = new FormData();
+//     formData.append('reporterName', reporterName);
+//     formData.append('facilityName', facilityName);
+//     formData.append('pdf', pdfBlob, 'report.pdf');
+
+//     const response = await fetch('https://capital-backend-lyyq.onrender.com/send-email', {
+//       method: 'POST',
+//       body: formData,
+//     });
+
+//     if (!response.ok) throw new Error('Failed to send email');
+
+//     toast.success('Email sent successfully!');
+//     setTimeout(() => window.location.reload(), 1000);
+//   } catch (error) {
+//     console.error(error);
+//     toast.error('Failed to send email.');
+//     setIsSending(false);
+//   }
+// };
+
+const uploadToICloud = async () => {
   if (capturedImages.length === 0) {
     toast.warn('No images captured.');
     return;
   }
 
   setIsSending(true);
-
   try {
     const pdf = await generatePdf();
-    const pdfBlob = pdf.output('blob', { compress: true });
+    const pdfBlob = pdf.output('blob');
 
-    const formData = new FormData();
-    formData.append('reporterName', reporterName);
-    formData.append('facilityName', facilityName);
-    formData.append('pdf', pdfBlob, 'report.pdf');
+    const now = new Date().toISOString().replace(/[:.]/g, '-');
+    const fileName = `Report_${facilityName}_${now}.pdf`;
 
-    const response = await fetch('https://capital-backend-lyyq.onrender.com/send-email', {
-      method: 'POST',
-      body: formData,
-    });
+    saveAs(pdfBlob, fileName); // User chooses iCloud Drive folder here
 
-    if (!response.ok) throw new Error('Failed to send email');
-
-    toast.success('Email sent successfully!');
-    setTimeout(() => window.location.reload(), 1000);
+    toast.success('Saved to your local system. Choose iCloud Drive to upload.');
   } catch (error) {
     console.error(error);
-    toast.error('Failed to send email.');
+    toast.error('Failed to generate or save PDF.');
+  } finally {
     setIsSending(false);
   }
 };
@@ -589,8 +614,8 @@ const sendEmail = async () => {
     </button>
 
         <button
-      onClick={sendEmail}
-      disabled={isSending}
+      onClick={uploadToICloud}
+      // disabled={isSending}
       style={{
         backgroundColor: isSending ? '#ccc' : '#007bff',
         color: '#fff',
@@ -603,7 +628,7 @@ const sendEmail = async () => {
         flex: '1 1 150px', // flexible on small screens
       }}
     >
-      {isSending ? 'Sending..Please Wait' : 'Send Email'}
+      {isSending ? 'Saving' : 'Save to icloud'}
     </button>
   </div>
 </div>

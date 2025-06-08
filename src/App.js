@@ -18,12 +18,14 @@ const SCOPES = process.env.REACT_APP_GOOGLE_SCOPE;
 
 function App() {
   const [isSending, setIsSending] = useState(false);
+  const [isPreviewing, setIsPreviewing] = useState(false);
   const [capturedImages, setCapturedImages] = useState([]);
   const [selectedFloor, setSelectedFloor] = useState('1');
   const [selectedType, setSelectedType] = useState('Classroom');
   const [selectedDescription, setSelectedDescription] = useState('Sauber');
   const [reporterName, setReporterName] = useState('');
   const [facilityName, setfacilityName] = useState('');
+  const [facilityTouched, setFacilityTouched] = useState(false);
   const [facingMode, setFacingMode] = useState('environment');
   const [location, setLocation] = useState({
     latitude: null,
@@ -41,6 +43,7 @@ function App() {
   const webcamRef = useRef(null);
   const authInstanceRef = useRef(null);
 
+  const isMobileDevice = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const downloadImagesAsZip = async () => {
   if (capturedImages.length === 0) {
     toast.warn('No images to download.');
@@ -155,7 +158,32 @@ saveAs(zipBlob, filename);
     }
   }, []);
 
-  const captureImage = () => {
+//   const captureImage = () => {
+//   const imageSrc = webcamRef.current?.getScreenshot();
+//   if (imageSrc) {
+//     const imageData = {
+//       imageSrc,
+//       type: selectedType,
+//       description: selectedDescription,
+//       reporter: reporterName,
+//       facility: facilityName,
+//       floor: selectedFloor,
+//     };
+//     setCapturedImages((prev) => [...prev, imageData]);
+//   } else {
+//     toast.error('Failed to capture image.');
+//   }
+// };
+
+const captureImage = () => {
+  if (!facilityName.trim()) {
+    setFacilityTouched(true);
+    toast.error("Please enter the name of the facility before capturing an image.");
+    return;
+  }
+
+  setFacilityTouched(false); // clear the red warning if it was previously triggered
+
   const imageSrc = webcamRef.current?.getScreenshot();
   if (imageSrc) {
     const imageData = {
@@ -171,6 +199,8 @@ saveAs(zipBlob, filename);
     toast.error('Failed to capture image.');
   }
 };
+
+
 
 
   const removeImage = (index) => {
@@ -312,7 +342,7 @@ metadataLines.forEach(line => {
 
     // Footer
     pdf.setDrawColor(0, 0, 0);
-    pdf.line(30, 1100, 1000, 1100);
+    pdf.line(40, 1100, 1900, 1100);
     pdf.setFontSize(24);
     pdf.setTextColor(0, 0, 0);
     const locationFooter = `${location.street || ''} ${location.houseNumber || ''} ${location.zipcode || ''} ${location.city || ''}`.trim();
@@ -331,13 +361,20 @@ metadataLines.forEach(line => {
 };
 
   const previewPdf = async () => {
-    setIsSending(true);
+  setIsPreviewing(true);
+  try {
     const pdf = await generatePdf();
     const blob = pdf.output('blob');
     const url = URL.createObjectURL(blob);
     setPdfPreview(url);
     setIsModalOpen(true);
-  };
+  } catch (err) {
+    toast.error("Failed to generate preview.");
+    console.error(err);
+  } finally {
+    setIsPreviewing(false);
+  }
+};
 
 // const sendEmail = async () => {
 //   if (capturedImages.length === 0) {
@@ -378,6 +415,10 @@ const uploadToICloud = async () => {
     return;
   }
 
+  if (isMobileDevice()) {
+    toast.info('After the download prompt, tap "Save to Files" and select iCloud Drive.');
+  }
+
   setIsSending(true);
   try {
     const pdf = await generatePdf();
@@ -386,9 +427,9 @@ const uploadToICloud = async () => {
     const now = new Date().toISOString().replace(/[:.]/g, '-');
     const fileName = `Report_${facilityName}_${now}.pdf`;
 
-    saveAs(pdfBlob, fileName); // User chooses iCloud Drive folder here
+    saveAs(pdfBlob, fileName); // Prompts download/share
 
-    toast.success('Saved to your local system. Choose iCloud Drive to upload.');
+    toast.success('PDF generated. Save it to iCloud Drive from your device.');
   } catch (error) {
     console.error(error);
     toast.error('Failed to generate or save PDF.');
@@ -396,6 +437,7 @@ const uploadToICloud = async () => {
     setIsSending(false);
   }
 };
+
 
   return (
     <div className="App">
@@ -485,30 +527,42 @@ const uploadToICloud = async () => {
             style={{ padding: '8px', marginBottom: '10px', width: '100%' }}
           />
            <label>Name of Facility:</label>
-          <input
-            type="text"
-            value={facilityName}
-            onChange={(e) => setfacilityName(e.target.value)}
-            placeholder="Enter Name of facility"
-            style={{ padding: '8px', marginBottom: '10px', width: '100%' }}
-          />
+            <input
+              type="text"
+              value={facilityName}
+              onChange={(e) => {
+                setfacilityName(e.target.value);
+                if (facilityTouched && e.target.value.trim()) {
+                  setFacilityTouched(false);
+                }
+              }}
+              placeholder="Enter Name of facility"
+              style={{
+                padding: '8px',
+                marginBottom: '10px',
+                width: '100%',
+                border: facilityTouched ? '2px solid red' : '1px solid #ccc',
+                borderRadius: '4px'
+              }}
+            />
+
         </div>
       </div>
 
       <ToastContainer position="bottom-right" autoClose={3000} />
 
-{capturedImages.length > 0 && (
-  <div className="captured-image-container" style={{ width: '100%' }}>
-  <div
-    className="captured-image"
-    style={{
-      display: 'flex',
-      flexWrap: 'wrap',
-      gap: '10px',
-      justifyContent: 'center',
-      textAlign:'left'
-    }}
-  >
+      {capturedImages.length > 0 && (
+        <div className="captured-image-container" style={{ width: '100%' }}>
+        <div
+          className="captured-image"
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '10px',
+            justifyContent: 'center',
+            textAlign:'left'
+          }}
+        >
     {capturedImages.map((item, idx) => (
       <div
         key={idx}
@@ -579,7 +633,7 @@ const uploadToICloud = async () => {
       justifyContent: 'center',
     }}
   >
-    <button
+    {/* <button
       onClick={downloadImagesAsZip}
       style={{
         backgroundColor: '#6c63ff',
@@ -594,42 +648,45 @@ const uploadToICloud = async () => {
       }}
     >
       Save Image(s)
-    </button>
+    </button> */}
 
     <button
-      onClick={previewPdf}
-      style={{
-        backgroundColor: '#28a745',
-        color: '#fff',
-        padding: '10px 20px',
-        border: 'none',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        fontWeight: 'bold',
-        fontSize: '16px',
-        flex: '1 1 150px',
-      }}
-    >
-      Preview PDF
+        onClick={previewPdf}
+        disabled={isPreviewing}
+        style={{
+          backgroundColor: isPreviewing ? '#ccc' : '#28a745',
+          color: '#fff',
+          padding: '10px 20px',
+          border: 'none',
+          borderRadius: '6px',
+          cursor: isPreviewing ? 'not-allowed' : 'pointer',
+          fontWeight: 'bold',
+          fontSize: '16px',
+          flex: '1 1 150px',
+        }}
+      >
+        {isPreviewing ? 'Generating Preview...' : 'Preview PDF'}
+      </button>
+
+
+    <button
+        onClick={uploadToICloud}
+        disabled={isSending}
+        style={{
+          backgroundColor: isSending ? '#ccc' : '#007bff',
+          color: '#fff',
+          padding: '10px 20px',
+          border: 'none',
+          borderRadius: '6px',
+          cursor: isSending ? 'not-allowed' : 'pointer',
+          fontWeight: 'bold',
+          fontSize: '16px',
+          flex: '1 1 150px',
+        }}
+      >
+      {isSending ? 'Saving...' : 'Save to iCloud'}
     </button>
 
-        <button
-      onClick={uploadToICloud}
-      // disabled={isSending}
-      style={{
-        backgroundColor: isSending ? '#ccc' : '#007bff',
-        color: '#fff',
-        padding: '10px 20px',
-        border: 'none',
-        borderRadius: '6px',
-        cursor: isSending ? 'not-allowed' : 'pointer',
-        fontWeight: 'bold',
-        fontSize: '16px',
-        flex: '1 1 150px', // flexible on small screens
-      }}
-    >
-      {isSending ? 'Saving' : 'Save to icloud'}
-    </button>
   </div>
 </div>
 

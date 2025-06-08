@@ -595,4 +595,11 @@ body {
   touch-action: none;
 }
 
+@media (max-width: 500px) {
+  .captured-image > div {
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
 

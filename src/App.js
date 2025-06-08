@@ -24,7 +24,6 @@ function App() {
   const [selectedDescription] = useState('Sauber');
   const [reporterName] = useState('');
   const [facilityName] = useState('');
-  // const [setFacilityTouched] = useState(false);
   const [facingMode, setFacingMode] = useState('environment');
   const [location, setLocation] = useState({
     latitude: null,
@@ -43,59 +42,6 @@ function App() {
   const authInstanceRef = useRef(null);
 
   const isMobileDevice = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-//   const downloadImagesAsZip = async () => {
-//   if (capturedImages.length === 0) {
-//     toast.warn('No images to download.');
-//     return;
-//   }
-
-//   const zip = new JSZip();
-
-//   for (let i = 0; i < capturedImages.length; i++) {
-//     try {
-//       const imageDataUrl = capturedImages[i].imageSrc;
-//       const response = await fetch(imageDataUrl);
-//       const blob = await response.blob();
-//       zip.file(`image_${i + 1}.jpeg`, blob);
-//     } catch (error) {
-//       console.error(`Error fetching image ${i + 1}`, error);
-//     }
-//   }
-
-// const now = new Date();
-// const datetime = now
-//   .toLocaleString('sv-SE', {
-//     year: 'numeric',
-//     month: '2-digit',
-//     day: '2-digit',
-//     hour: '2-digit',
-//     minute: '2-digit',
-//   })
-//   .replace(' ', '_')
-//   .replace(/:/g, '-');
-
-// const clean = (str) =>
-//   (str || '').trim().replace(/\s+/g, '').replace(/[^a-zA-Z0-9_-]/g, '');
-
-// const reporter = clean(reporterName);
-// const facility = clean(facilityName);
-
-// // ✅ Define filename BEFORE loop
-// const filename = `${reporter}_${facility}_${datetime}.zip`;
-
-// // Loop over images and add to ZIP using filename
-// for (let i = 0; i < capturedImages.length; i++) {
-//   const imageDataUrl = capturedImages[i].imageSrc;
-//   const response = await fetch(imageDataUrl);
-//   const blob = await response.blob();
-
-//   zip.file(`${filename.replace('.zip', '')}_${i + 1}.jpeg`, blob); // name image same as zip
-// }
-
-// const zipBlob = await zip.generateAsync({ type: "blob" });
-// saveAs(zipBlob, filename);
-
-// };
 
   useEffect(() => {
     function start() {
@@ -157,31 +103,7 @@ function App() {
     }
   }, []);
 
-//   const captureImage = () => {
-//   const imageSrc = webcamRef.current?.getScreenshot();
-//   if (imageSrc) {
-//     const imageData = {
-//       imageSrc,
-//       type: selectedType,
-//       description: selectedDescription,
-//       reporter: reporterName,
-//       facility: facilityName,
-//       floor: selectedFloor,
-//     };
-//     setCapturedImages((prev) => [...prev, imageData]);
-//   } else {
-//     toast.error('Failed to capture image.');
-//   }
-// };
-
 const captureImage = () => {
-  // if (!facilityName.trim()) {
-  //   setFacilityTouched(true);
-  //   toast.error("Please enter the name of the facility before capturing an image.");
-  //   return;
-  // }
-
-  // setFacilityTouched(false); // clear the red warning if it was previously triggered
 
   const imageSrc = webcamRef.current?.getScreenshot();
   if (imageSrc) {
@@ -198,9 +120,6 @@ const captureImage = () => {
     toast.error('Failed to capture image.');
   }
 };
-
-
-
 
   const removeImage = (index) => {
     setCapturedImages((prev) => prev.filter((_, i) => i !== index));
@@ -376,38 +295,6 @@ metadataLines.forEach(line => {
   }
 };
 
-// const sendEmail = async () => {
-//   if (capturedImages.length === 0) {
-//     toast.warn('No images captured.');
-//     return;
-//   }
-
-//   setIsSending(true);
-
-//   try {
-//     const pdf = await generatePdf();
-//     const pdfBlob = pdf.output('blob', { compress: true });
-
-//     const formData = new FormData();
-//     formData.append('reporterName', reporterName);
-//     formData.append('facilityName', facilityName);
-//     formData.append('pdf', pdfBlob, 'report.pdf');
-
-//     const response = await fetch('https://capital-backend-lyyq.onrender.com/send-email', {
-//       method: 'POST',
-//       body: formData,
-//     });
-
-//     if (!response.ok) throw new Error('Failed to send email');
-
-//     toast.success('Email sent successfully!');
-//     setTimeout(() => window.location.reload(), 1000);
-//   } catch (error) {
-//     console.error(error);
-//     toast.error('Failed to send email.');
-//     setIsSending(false);
-//   }
-// };
 const updateCapturedImage = (index, field, value) => {
   setCapturedImages((prevImages) =>
     prevImages.map((img, idx) =>
@@ -503,57 +390,6 @@ const uploadToICloud = async () => {
               Capture Image
             </button>
         </div>
-        {/* <div className="dropdown-container">
-          <label>Floor:</label>
-          <select value={selectedFloor} onChange={(e) => setSelectedFloor(e.target.value)}>
-            {[...Array(50)].map((_, i) => (
-              <option key={i} value={i + 1}>{i + 1}</option>
-            ))}
-          </select>
-
-          <label>Type:</label>
-          <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}>
-            <option value="Classroom">Classroom</option>
-            <option value="Floor">Floor</option>
-            <option value="Restroom">Restroom</option>
-            <option value="Stairs">Stairs</option>
-          </select>
-
-          <label>Description:</label>
-          <select value={selectedDescription} onChange={(e) => setSelectedDescription(e.target.value)}>
-            <option value="Sauber">Sauber</option>
-            <option value="Nicht sauber">Nicht sauber</option>
-          </select>
-
-          <label>Reporter:</label>
-          <input
-            type="text"
-            value={reporterName}
-            onChange={(e) => setReporterName(e.target.value)}
-            placeholder="Enter reporter's name"
-            style={{ padding: '8px', marginBottom: '10px', width: '100%' }}
-          />
-           <label>Name of Facility:</label>
-            <input
-              type="text"
-              value={facilityName}
-              onChange={(e) => {
-                setfacilityName(e.target.value);
-                if (facilityTouched && e.target.value.trim()) {
-                  setFacilityTouched(false);
-                }
-              }}
-              placeholder="Enter Name of facility"
-              style={{
-                padding: '8px',
-                marginBottom: '10px',
-                width: '100%',
-                border: facilityTouched ? '2px solid red' : '1px solid #ccc',
-                borderRadius: '4px'
-              }}
-            />
-
-        </div> */}
       </div>
 
       <ToastContainer position="bottom-right" autoClose={3000} />
@@ -570,108 +406,130 @@ const uploadToICloud = async () => {
             textAlign:'left'
           }}
         >
-    {capturedImages.map((item, idx) => (
-      <div
-        key={idx}
-        style={{
-          position: 'relative',
-          width: '150px',
-          border: '1px solid #ccc',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          background: '#fff',
-          padding: '5px',
-          flex: '1 1 150px', // allow flexible shrink/grow
-          maxWidth: '200px',
-        }}
-      >
-        <img
-          src={item.imageSrc}
-          alt={`Captured ${idx}`}
+          {capturedImages.map((item, idx) => (
+        <div
+          key={idx}
           style={{
-            width: '100%',
-            height: 'auto',
-            borderRadius: '4px',
-            display: 'block',
+            position: 'relative',
+            width: '150px',
+            border: '1px solid #ccc',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            background: '#fff',
+            padding: '5px',
+            flex: '1 1 150px',
+            maxWidth: '200px',
+            minWidth: '150px',
+            display: 'flex',
+            flexDirection: 'column',
           }}
-        />
-
-        {/* ✕ Remove button */}
-        <button
-          onClick={() => removeImage(idx)}
-          style={{
-            position: 'absolute',
-            top: '5px',
-            right: '5px',
-            background: 'red',
-            color: 'white',
-            border: 'none',
-            borderRadius: '50%',
-            width: '24px',
-            height: '24px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            lineHeight: '24px',
-            textAlign: 'center',
-          }}
-          title="Remove image"
         >
-          ✕
-        </button>
+          <img
+            src={item.imageSrc}
+            alt={`Captured ${idx}`}
+            style={{
+              width: '100%',
+              height: 'auto',
+              borderRadius: '4px',
+              display: 'block',
+            }}
+          />
 
-          <div style={{ fontSize: '12px', marginTop: '6px', wordWrap: 'break-word' }}>
-  <label><strong>Type:</strong>
-    <select
-      value={item.type}
-      onChange={(e) => updateCapturedImage(idx, 'type', e.target.value)}
-    >
-      <option value="Classroom">Classroom</option>
-      <option value="Floor">Floor</option>
-      <option value="Restroom">Restroom</option>
-      <option value="Stairs">Stairs</option>
-    </select>
-  </label>
+          {/* ✕ Remove button */}
+          <button
+            onClick={() => removeImage(idx)}
+            style={{
+              position: 'absolute',
+              top: '5px',
+              right: '5px',
+              background: 'red',
+              color: 'white',
+              border: 'none',
+              borderRadius: '50%',
+              width: '24px',
+              height: '24px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              lineHeight: '24px',
+              textAlign: 'center',
+            }}
+            title="Remove image"
+          >
+            ✕
+          </button>
 
-  <label><strong>Description:</strong>
-    <select
-      value={item.description}
-      onChange={(e) => updateCapturedImage(idx, 'description', e.target.value)}
-    >
-      <option value="Sauber">Sauber</option>
-      <option value="Nicht sauber">Nicht sauber</option>
-    </select>
-  </label>
+          {/* Editable Fields */}
+          <div
+            style={{
+              fontSize: '12px',
+              marginTop: '6px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '6px',
+            }}
+          >
+            <label style={{ display: 'flex', flexDirection: 'column' }}>
+              <strong>Type:</strong>
+              <select
+                value={item.type}
+                onChange={(e) => updateCapturedImage(idx, 'type', e.target.value)}
+                style={{ fontSize: '12px', padding: '4px' }}
+              >
+                <option value="Classroom">Classroom</option>
+                <option value="Floor">Floor</option>
+                <option value="Restroom">Restroom</option>
+                <option value="Stairs">Stairs</option>
+              </select>
+            </label>
 
-    <label><strong>Floor:</strong>
-    <select
-      value={item.floor}
-      onChange={(e) => updateCapturedImage(idx, 'floor', e.target.value)}
-    >
-      {[...Array(50)].map((_, i) => (
-        <option key={i} value={i + 1}>{i + 1}</option>
+            <label style={{ display: 'flex', flexDirection: 'column' }}>
+              <strong>Description:</strong>
+              <select
+                value={item.description}
+                onChange={(e) => updateCapturedImage(idx, 'description', e.target.value)}
+                style={{ fontSize: '12px', padding: '4px' }}
+              >
+                <option value="Sauber">Sauber</option>
+                <option value="Nicht sauber">Nicht sauber</option>
+              </select>
+            </label>
+
+            <label style={{ display: 'flex', flexDirection: 'column' }}>
+              <strong>Reporter:</strong>
+              <input
+                type="text"
+                value={item.reporter}
+                onChange={(e) => updateCapturedImage(idx, 'reporter', e.target.value)}
+                style={{ fontSize: '12px', padding: '4px' }}
+              />
+            </label>
+
+            <label style={{ display: 'flex', flexDirection: 'column' }}>
+              <strong>Facility:</strong>
+              <input
+                type="text"
+                value={item.facility}
+                onChange={(e) => updateCapturedImage(idx, 'facility', e.target.value)}
+                style={{ fontSize: '12px', padding: '4px' }}
+              />
+            </label>
+
+            <label style={{ display: 'flex', flexDirection: 'column' }}>
+              <strong>Floor:</strong>
+              <select
+                value={item.floor}
+                onChange={(e) => updateCapturedImage(idx, 'floor', e.target.value)}
+                style={{ fontSize: '12px', padding: '4px' }}
+              >
+                {[...Array(50)].map((_, i) => (
+                  <option key={i} value={i + 1}>{i + 1}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </div>
       ))}
-    </select>
-  </label>
 
-  <label><strong>Reporter:</strong>
-    <input
-      type="text"
-      value={item.reporter}
-      onChange={(e) => updateCapturedImage(idx, 'reporter', e.target.value)}
-    />
-  </label>
-
-  <label><strong>Facility:</strong>
-    <input
-      type="text"
-      value={item.facility}
-      onChange={(e) => updateCapturedImage(idx, 'facility', e.target.value)}
-    />
-  </label>
-</div>
-
-      </div>
-    ))}
   </div>
 
   {/* Buttons section */}
@@ -684,23 +542,6 @@ const uploadToICloud = async () => {
       justifyContent: 'center',
     }}
   >
-    {/* <button
-      onClick={downloadImagesAsZip}
-      style={{
-        backgroundColor: '#6c63ff',
-        color: '#fff',
-        padding: '10px 20px',
-        border: 'none',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        fontWeight: 'bold',
-        fontSize: '16px',
-        flex: '1 1 150px',
-      }}
-    >
-      Save Image(s)
-    </button> */}
-
     <button
         onClick={previewPdf}
         disabled={isPreviewing}

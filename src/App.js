@@ -360,6 +360,10 @@ const uploadToICloud = async () => {
     saveAs(pdfBlob, fileName); // Prompts download/share
 
     toast.success('PDF generated. Save it to iCloud Drive from your device.');
+
+    // ✅ Reset the session
+    resetPage();
+
   } catch (error) {
     console.error(error);
     toast.error('Failed to generate or save PDF.');
@@ -368,6 +372,14 @@ const uploadToICloud = async () => {
   }
 };
 
+  const resetPage = () => {
+    setCapturedImages([]);
+    setReporterName('');
+    setFacilityName('');
+    setPdfPreview(null);
+    setIsModalOpen(false);
+    setFocusedTileIndex(null);
+  };
 
   return (
     <div className="App">

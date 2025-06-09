@@ -172,11 +172,20 @@ const generatePdf = async () => {
 
   // ✅ Top-left Facility Name clearly above logo
 const facilityText = facilityName || capturedImages[0]?.facility;
-const facilityTextWidth = pdf.getTextWidth(facilityText);
-const facilityCenterX = (1920 - facilityTextWidth) / 2;
+// const facilityTextWidth = pdf.getTextWidth(facilityText);
+// const facilityCenterX = (1920 - facilityTextWidth) / 2;
 pdf.setFont("helvetica", "normal");
 pdf.setFontSize(78);
-pdf.text(facilityText, facilityCenterX, 80);
+pdf.text(facilityText, 80, 80, { maxWidth: 1760 }); // Left margin: 80px
+pdf.setFont("helvetica", "normal");
+pdf.setFontSize(78);
+pdf.setTextColor(0, 0, 0);
+pdf.text(facilityText, 80, 80, {
+  maxWidth: 1760,
+  align: 'left',
+  lineHeightFactor: 1.2,
+});
+// pdf.text(facilityText, facilityCenterX, 80);
 
 const reporterText = reporterName || capturedImages[0]?.reporter;
 const reporterTextWidth = pdf.getTextWidth(reporterText);
@@ -188,22 +197,11 @@ pdf.text(reporterText, reporterCenterX, 1120);
 
   // ✅ Centered Logo
   const logoWidth = 1200;
-  const logoHeight = 900;
+  const logoHeight = 800;
   const logoX = (1920 - logoWidth) / 2;
-  const logoY = 100; // Start below the title
+  const logoY = 200; // Start below the title
   pdf.addImage(capital_image_template, 'JPEG', logoX, logoY, logoWidth, logoHeight, '', 'FAST');
 
-  // ✅ Bottom-left Reporter Name
-// // Set font and color
-// pdf.setFont("helvetica", "normal");
-// pdf.setFontSize(36);
-// pdf.setTextColor(0, 0, 0);
-
-// Reporter name text
-// const reporterText = reporterName || capturedImages[0]?.reporter || "Reporter Name";
-
-// Calculate center X
-// const reporterTextWidth = pdf.getTextWidth(reporterText);
 const centerX = (1920 - reporterTextWidth) / 2;
 
 // Draw reporter name centered near the bottom

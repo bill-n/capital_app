@@ -344,7 +344,7 @@ const uploadToICloud = async () => {
   }
 
   if (isMobileDevice()) {
-    toast.info('After the download prompt, tap "Save to Files" and select iCloud Drive.');
+    toast.info('After the download prompt, tap "Save to Files"');
   }
 
   setIsSending(true);
@@ -357,7 +357,7 @@ const uploadToICloud = async () => {
 
     saveAs(pdfBlob, fileName); // Prompts download/share
 
-    toast.success('PDF generated. Save it to iCloud Drive from your device.');
+    toast.success('PDF generated.');
 
     // ✅ Reset the session
     resetPage();
@@ -610,7 +610,7 @@ const uploadToICloud = async () => {
           flex: '1 1 150px',
         }}
       >
-      {isSending ? 'Saving...' : 'Save to iCloud'}
+      {isSending ? 'Saving...' : 'Download'}
     </button>
 
   </div>

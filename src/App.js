@@ -166,7 +166,7 @@ const generatePdf = async () => {
   const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [1920, 1180] });
   const totalPages = capturedImages.length + 1;
   const capital_image_template = await getBase64ImageFromURL('cleaning.jpeg');
-  const capital_image_logo = await getBase64ImageFromURL('cleaning.jpeg');
+  const capital_image_logo = await getBase64ImageFromURL('cleaning-logo.jpeg');
 
   // Cover Page
 

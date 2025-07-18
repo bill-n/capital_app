@@ -89,7 +89,7 @@ function App() {
               city: getAddressComponent(['locality']),
               country: getAddressComponent(['country']),
               street: getAddressComponent(['route']),
-              houseNumber: getAddressComponent(['street_number']) || 'Not available',
+              houseNumber: getAddressComponent(['street_number']) || 'Not available Now',
               zipcode,
               timestamp,
               landmark,

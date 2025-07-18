@@ -165,8 +165,8 @@ const getBase64ImageFromURL = (url) => {
 const generatePdf = async () => {
   const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [1920, 1180] });
   const totalPages = capturedImages.length + 1;
-  const capital_image_template = await getBase64ImageFromURL('capital_image_template.png');
-  const capital_image_logo = await getBase64ImageFromURL('capital_image_logo.png');
+  const capital_image_template = await getBase64ImageFromURL('cleaning.jpeg');
+  const capital_image_logo = await getBase64ImageFromURL('cleaning.jpeg');
 
   // Cover Page
 
@@ -383,8 +383,8 @@ const uploadToICloud = async () => {
     <div className="App">
       <h1 className="app-title">
         <span role="img" aria-label="building">🏢</span>{' '}
-        <span style={{ color: 'black' }}>CAPITAL </span>{' '}
-        <span style={{ color: '#c4aa6a' }}>INFRADIENST</span>
+        <span style={{ color: 'black' }}>CLEANING </span>{' '}
+        <span style={{ color: '#c4aa6a' }}>COMPANY</span>
       </h1>
       <div className="camera-selector">
         <select value={facingMode} onChange={(e) => setFacingMode(e.target.value)} className="styled-select">
